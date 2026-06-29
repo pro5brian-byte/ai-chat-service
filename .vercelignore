@@ -1,0 +1,6 @@
+api/
+contracts/
+db/
+src/
+*.config.*
+.env*
