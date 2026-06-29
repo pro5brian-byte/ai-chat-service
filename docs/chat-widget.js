@@ -1,47 +1,57 @@
 (function(){
-  // 企业知识库（从数据库同步）
-  const KNOWLEDGE_BASE = `【产品报价】
-Q: 你们的产品怎么收费？
-A: 我们的产品提供三个版本：基础版免费（100次/月）、专业版299元/月（无限对话）、企业版999元/月（全功能）。所有版本支持14天免费试用。
+  // 企业宣传片拍摄 - 知识库
+  const KNOWLEDGE_BASE = `【拍摄服务】
+Q: 你们可以拍摄企业宣传片吗？
+A: 当然可以！📹 我们专注于企业宣传片拍摄，拥有专业的拍摄团队和后期制作能力。我们的服务包括：企业宣传片、产品展示视频、工厂实拍、人物访谈/老板IP打造、活动记录、短视频。我们会根据您的需求量身定制拍摄方案。
 
-Q: 有免费试用吗？
-A: 有的！14天全功能免费试用，可体验所有专业版功能。
+【价格报价】
+Q: 拍摄企业宣传片怎么收费？
+A: 我们有三个套餐：🎬 基础版3,999元（1天拍摄，1-2分钟成片）；🎬 标准版9,999元（2-3天拍摄，3-5分钟成片，含创意策划）；🎬 旗舰版19,999元（5-7天拍摄，5-10分钟成片，含全案策划+特效）。具体价格根据需求调整，需要推荐合适方案吗？
+
+Q: 有免费试用或免费咨询吗？
+A: 有的！我们可以先为您提供免费的拍摄创意方案 📋，包含脚本大纲和分镜设计，您看看效果再决定是否合作。满意后再签约！
 
 【业务流程】
-Q: 合作流程是怎样的？
-A: 1.需求沟通→2.方案定制→3.签约付款→4.部署上线（3个工作日）→5.培训交付→6.持续服务。整个流程约1-2周。
+Q: 拍摄流程是怎样的？
+A: 1️⃣需求沟通→2️⃣创意策划（3-5天）→3️⃣前期准备→4️⃣现场拍摄（1-5天）→5️⃣后期制作（7-15天）→6️⃣修改交付。整个流程约3-4周，有紧急需求可加急1周交付。
 
-【公司介绍】
-Q: 你们公司做什么的？
-A: 专注AI智能客服解决方案，基于Kimi大模型，5分钟快速部署，支持全渠道接入。服务超500家企业。
+Q: 拍摄需要多长时间？
+A: 简单产品视频1天，企业宣传片2-3天，品牌形象片3-5天。完整项目周期：简单2-3周，标准3-4周，复杂4-6周。
 
-【售后服务】
-Q: 售后服务怎么样？
-A: 7×24小时服务，电话400-XXX-XXXX，邮件support@example.com。紧急问题15分钟响应。
+【常见问题】
+Q: 需要准备什么？
+A: 📋 素材准备（企业资料、产品样品、资质证书）；👥 人员安排（确定出镜人员）；🏢 场地准备（办公区整理、生产线清洁）。拍摄当天有导演现场指导，不用担心！
 
-Q: 怎么联系你们？
-A: 在线客服（本窗口）、电话400-XXX-XXXX（工作日9-18点）、邮箱support@example.com。`;
+Q: 能看一下案例吗？
+A: 我们拍摄过众多企业宣传片，涵盖制造业、科技公司、电商企业、医疗健康、教育培训等行业。您是什么行业？我可以推荐相关案例参考。
+
+Q: 可以开发票吗？
+A: 可以的！提供增值税普通发票和专用发票，支持对公转账和分期付款（3:5:2或5:5）。
+
+Q: 不满意可以修改吗？
+A: 当然可以！修改到您满意为止。初稿完成后提供免费修改3次，每次3-5个工作日。`;
 
   const CONFIG = {
     apiKey: 'sk-94GVykLFgWKkU1OwC27iK1kQC0S6asUZYZRtVvINHrYRrjWP',
     apiUrl: 'https://api.moonshot.cn/v1/chat/completions',
     model: 'moonshot-v1-8k',
-    welcomeMessage: '您好！有什么需要咨询的吗？随时沟通',
-    aiName: '在线客服小影',
+    welcomeMessage: '您好！👋 欢迎来到我们的官网。我们是专业的企业宣传片拍摄团队，请问您想拍摄什么类型的视频呢？',
+    aiName: '在线客服',
     maxHistory: 20
   };
 
-  // 系统提示词 - 基于企业知识库
-  const SYSTEM_PROMPT = `你是一位专业、热情的企业客服顾问。以下是企业知识库，请基于这些内容回答客户问题：
+  // 系统提示词 - 企业宣传片拍摄客服
+  const SYSTEM_PROMPT = `你是【XX影视传媒】的智能客服顾问，我们是一家专注于企业宣传片拍摄制作的公司。请基于以下知识库回答客户问题：
 
 ${KNOWLEDGE_BASE}
 
 【回答原则】
-1. 语气自然亲切，像真人聊天，适当用"您"、"亲"，偶尔加😊👍等表情
-2. 回答结构：先问候→给出明确答案→补充建议→问还有没有其他问题
-3. 口语化表达，简洁有力，直击要点
-4. 知识库里有的内容，准确回答；没有的，诚实说明不知道，建议联系人工
-5. 适当分段，每段不要太长`;
+1. 语气热情专业，像资深销售顾问一样主动服务
+2. 回答结构：先确认客户需求→给出具体方案/报价→引导下一步行动
+3. 适当使用emoji增加亲和力，但不要过多
+4. 报价和流程要准确，不能编造
+5. 主动询问客户需求，引导留下联系方式或安排进一步沟通
+6. 每次回复最后可以问"您还有什么想了解的吗？"或"需要我帮您安排吗？"`;
 
   function getVisitorId() {
     let id = localStorage.getItem('chat_visitor_id');
@@ -89,13 +99,13 @@ ${KNOWLEDGE_BASE}
   const btn = document.createElement('button');
   btn.id = 'ai-chat-btn';
   btn.innerHTML = '💬';
-  btn.title = '智能客服';
+  btn.title = '在线客服';
   document.body.appendChild(btn);
 
   const box = document.createElement('div');
   box.id = 'ai-chat-box';
   box.innerHTML = `
-    <div id="ai-chat-header"><span>🤖 ${CONFIG.aiName}</span><button class="close-btn" onclick="document.getElementById('ai-chat-box').style.display='none'">✕</button></div>
+    <div id="ai-chat-header"><span>🎬 ${CONFIG.aiName}</span><button class="close-btn" onclick="document.getElementById('ai-chat-box').style.display='none'">✕</button></div>
     <div id="ai-chat-messages"></div>
     <div id="ai-chat-input-area"><input type="text" id="ai-chat-input" placeholder="输入问题..." autocomplete="off"><button id="ai-chat-send">发送</button></div>
   `;
@@ -169,5 +179,5 @@ ${KNOWLEDGE_BASE}
 
   sendBtn.onclick = sendMessage;
   inputEl.onkeypress = function(e) { if(e.key === 'Enter') sendMessage(); };
-  console.log('[AI Chat Widget] Loaded with knowledge base.');
+  console.log('[AI Chat Widget] Loaded for video production service.');
 })();
