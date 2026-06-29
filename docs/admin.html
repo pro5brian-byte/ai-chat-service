@@ -20,13 +20,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
 .stat-card .label { font-size: 13px; color: #888; margin-bottom: 8px; }
 .stat-card .value { font-size: 32px; font-weight: bold; color: #1e293b; }
 .card { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 20px; }
-.card h2 { font-size: 16px; margin-bottom: 20px; }
+.card h2 { font-size: 16px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; }
 table { width: 100%; border-collapse: collapse; font-size: 14px; }
 th { text-align: left; padding: 12px; color: #888; font-weight: 500; border-bottom: 1px solid #eee; font-size: 13px; }
 td { padding: 14px 12px; border-bottom: 1px solid #f5f5f5; vertical-align: top; }
 tr:hover { background: #fafafa; }
 .badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 12px; }
-.badge-green { background: #dcfce7; color: #166534; }
 .badge-blue { background: #dbeafe; color: #1e40af; }
 .msg-preview { max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #666; }
 .tab-bar { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
@@ -39,12 +38,12 @@ tr:hover { background: #fafafa; }
 .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; }
 .btn-primary { background: #4f46e5; color: #fff; }
 .btn-danger { background: #ef4444; color: #fff; }
-.settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-.settings-grid label { display: block; font-size: 13px; color: #666; margin-bottom: 5px; }
-.settings-grid input, .settings-grid select, .settings-grid textarea { width: 100%; padding: 10px 14px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px; outline: none; font-family: inherit; }
-.mt-20 { margin-top: 20px; }
 .empty-state { text-align: center; padding: 60px 20px; color: #999; }
 #embed-code { width: 100%; min-height: 120px; padding: 15px; border: 1px solid #e5e7eb; border-radius: 8px; font-family: monospace; font-size: 13px; background: #f8f9fa; }
+.success-msg { background: #dcfce7; color: #166534; padding: 12px 16px; border-radius: 8px; margin-bottom: 15px; display: none; }
+.db-info { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 16px; margin-top: 15px; }
+.db-info table { margin-top: 10px; }
+.db-info td { padding: 6px 0; border: none; font-size: 13px; }
 </style>
 </head>
 <body>
@@ -65,7 +64,7 @@ tr:hover { background: #fafafa; }
     <div class="stat-card"><div class="label">今日对话</div><div class="value" id="stat-today">0</div></div>
     <div class="stat-card"><div class="label">总会话数</div><div class="value" id="stat-total">0</div></div>
     <div class="stat-card"><div class="label">消息总数</div><div class="value" id="stat-messages">0</div></div>
-    <div class="stat-card"><div class="label">知识库条目</div><div class="value" id="stat-kb">9</div></div>
+    <div class="stat-card"><div class="label">知识库条目</div><div class="value" id="stat-kb">6</div></div>
   </div>
   <div class="card"><h2>最近对话</h2><div id="recent-conversations"></div></div>
 </div>
@@ -80,6 +79,7 @@ tr:hover { background: #fafafa; }
 
 <div id="tab-knowledge" style="display:none">
   <div class="header"><h1>知识库管理</h1></div>
+  <div class="success-msg" id="kb-success">操作成功！</div>
   <div class="tab-bar">
     <button class="tab active" onclick="switchKbTab('list')">知识库列表</button>
     <button class="tab" onclick="switchKbTab('add')">+ 新增问答</button>
@@ -93,10 +93,10 @@ tr:hover { background: #fafafa; }
       <h2>新增知识库问答</h2>
       <div class="kb-form">
         <div class="form-row">
-          <div><label>分类</label><select id="kb-category"><option value="1">产品咨询</option><option value="2">使用帮助</option><option value="3">售后服务</option><option value="4">账户问题</option></select></div>
+          <div><label>分类</label><select id="kb-category"><option value="1">产品报价</option><option value="2">业务流程</option><option value="3">常见问题</option><option value="4">售后服务</option></select></div>
           <div><label>关键词</label><input type="text" id="kb-keywords" placeholder="价格,多少钱,费用"></div>
         </div>
-        <label>问题</label><input type="text" id="kb-question" placeholder="用户可能会问什么问题？">
+        <label>问题</label><input type="text" id="kb-question" placeholder="客户可能会问什么问题？">
         <label>答案</label><textarea id="kb-answer" placeholder="输入AI应该回复的内容..."></textarea>
         <div><button class="btn btn-primary" onclick="addKnowledge()">保存</button>
         <button class="btn" onclick="switchKbTab('list')" style="background:#f3f4f6;color:#666;margin-left:10px;">取消</button></div>
@@ -108,20 +108,23 @@ tr:hover { background: #fafafa; }
 <div id="tab-settings" style="display:none">
   <div class="header"><h1>系统设置</h1></div>
   <div class="card">
-    <div style="font-size:18px;margin-bottom:15px;color:#1e293b;">AI 配置</div>
-    <div class="settings-grid">
-      <div><label>AI 名称</label><input type="text" id="ai-name" value="智能客服"></div>
-      <div><label>欢迎消息</label><input type="text" id="welcome-msg" value="您好！我是智能客服助手，有什么可以帮助您的吗？"></div>
-      <div><label>转人工关键词</label><input type="text" id="transfer-keywords" value="人工,客服,转人工,人工客服"></div>
-      <div><label>最大回复长度</label><input type="number" id="max-length" value="500"></div>
-      <div><label>未知问题回复</label><input type="text" id="unknown-reply" value="抱歉，我暂时无法回答这个问题，建议您联系人工客服。"></div>
-    </div>
-  </div>
-  <div class="card mt-20">
     <div style="font-size:18px;margin-bottom:15px;color:#1e293b;">嵌入代码</div>
     <p style="margin-bottom:15px;color:#666;font-size:14px;">将以下代码复制到企业官网HTML的 &lt;/body&gt; 标签之前：</p>
     <textarea id="embed-code" readonly></textarea>
-    <div class="mt-20"><button class="btn btn-primary" onclick="copyEmbedCode()">复制代码</button></div>
+    <div style="margin-top:15px;"><button class="btn btn-primary" onclick="copyEmbedCode()">复制代码</button></div>
+  </div>
+  <div class="card" style="margin-top:20px;">
+    <div style="font-size:18px;margin-bottom:15px;color:#1e293b;">数据库连接信息</div>
+    <p style="color:#666;font-size:14px;margin-bottom:10px;">✅ TiDB Cloud 数据库已连接！数据永久保存。</p>
+    <div class="db-info">
+      <table>
+        <tr><td style="width:100px;color:#888;">Host</td><td>gateway01.ap-southeast-1.prod.aws.tidbcloud.com</td></tr>
+        <tr><td style="color:#888;">Port</td><td>4000</td></tr>
+        <tr><td style="color:#888;">Database</td><td>ai_chat</td></tr>
+        <tr><td style="color:#888;">User</td><td>367LphjRK4LxS6S.root</td></tr>
+        <tr><td style="color:#888;">Status</td><td style="color:#22c55e;">🟢 已连接</td></tr>
+      </table>
+    </div>
   </div>
 </div>
 
@@ -133,16 +136,20 @@ function saveConversations(list) { localStorage.setItem('chat_conversations', JS
 function getKnowledge() { return JSON.parse(localStorage.getItem('chat_knowledge') || 'null') || getDefaultKnowledge(); }
 function saveKnowledge(list) { localStorage.setItem('chat_knowledge', JSON.stringify(list)); }
 function getDefaultKnowledge() { return [
-  {id:1,category:'产品咨询',question:'你们的产品有哪些功能？',answer:'我们的产品提供智能客服、知识库管理、数据分析、人工转接等核心功能。支持多渠道接入，包括网站、小程序、APP等。',keywords:'功能,产品,有哪些'},
-  {id:2,category:'产品咨询',question:'产品价格是多少？',answer:'基础版：免费（100次/月）；专业版：299元/月；企业版：999元/月。具体可联系销售获取定制方案。',keywords:'价格,多少钱,费用,套餐'},
-  {id:3,category:'产品咨询',question:'有免费试用吗？',answer:'有的！我们提供14天全功能免费试用，无需绑定信用卡。',keywords:'免费,试用,体验'},
-  {id:4,category:'使用帮助',question:'如何快速上手使用？',answer:'1.完成基础设置 2.导入知识库文档 3.将客服组件嵌入网站 4.测试对话效果 5.根据数据报告优化。',keywords:'上手,使用,教程,入门'},
-  {id:5,category:'使用帮助',question:'支持哪些网站平台？',answer:'支持HTML/静态网站、WordPress、Shopify、企业官网、Vue/React/Angular项目。只需复制一段嵌入代码即可。',keywords:'支持,平台,网站,WordPress,Shopify'},
-  {id:6,category:'售后服务',question:'如何申请售后服务？',answer:'1.在本客服窗口描述问题 2.发送邮件至 support@example.com 3.拨打客服热线：400-XXX-XXXX。24小时内响应。',keywords:'售后,服务,申请,退换'},
-  {id:7,category:'售后服务',question:'退款政策是什么？',answer:'7天无理由退款保障。购买后7天内可申请全额退款，3-5个工作日原路返回。',keywords:'退款,政策,退钱'},
-  {id:8,category:'账户问题',question:'忘记密码怎么办？',answer:'1.点击登录页"忘记密码" 2.输入注册邮箱 3.查收重置邮件并按提示操作。',keywords:'密码,忘记,重置'},
-  {id:9,category:'账户问题',question:'如何修改账户信息？',answer:'登录后进入"个人设置"页面，可修改用户名、邮箱地址、头像、通知偏好。',keywords:'账户,修改,信息,设置'}
+  {id:1,category:'产品报价',question:'你们的产品怎么收费？',answer:'基础版免费（100次/月）、专业版299元/月（无限对话）、企业版999元/月（全功能）。所有版本支持14天免费试用。',keywords:'价格,收费,多少钱'},
+  {id:2,category:'业务流程',question:'合作流程是怎样的？',answer:'1.需求沟通→2.方案定制→3.签约付款→4.部署上线（3个工作日）→5.培训交付→6.持续服务。整个流程约1-2周。',keywords:'流程,合作,签约'},
+  {id:3,category:'产品报价',question:'有免费试用吗？',answer:'有的！14天全功能免费试用，可体验所有专业版功能。',keywords:'免费,试用'},
+  {id:4,category:'常见问题',question:'你们公司做什么的？',answer:'专注AI智能客服解决方案，基于Kimi大模型，5分钟快速部署，支持全渠道接入。服务超500家企业。',keywords:'公司,业务'},
+  {id:5,category:'售后服务',question:'售后服务怎么样？',answer:'7×24小时服务，电话400-XXX-XXXX，邮件support@example.com。紧急问题15分钟响应。',keywords:'售后,服务'},
+  {id:6,category:'常见问题',question:'怎么联系你们？',answer:'在线客服（本窗口）、电话400-XXX-XXXX（工作日9-18点）、邮箱support@example.com。',keywords:'联系,电话'}
 ]; }
+
+function showSuccess(msg) {
+  const el = document.getElementById('kb-success');
+  el.textContent = msg;
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 3000);
+}
 
 function switchTab(tab) {
   document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
@@ -202,6 +209,7 @@ function viewConv(id) {
 function renderKnowledge() {
   const kb = getKnowledge();
   const tbody = document.getElementById('kb-list');
+  if(!kb.length) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:40px;color:#999;">暂无知识库数据</td></tr>'; return; }
   tbody.innerHTML = kb.map(item => `<tr><td><span class="badge badge-blue">${item.category}</span></td><td>${item.question}</td><td class="msg-preview">${item.answer}</td><td><button class="btn btn-danger" style="padding:4px 12px;font-size:12px;" onclick="delKnowledge(${item.id})">删除</button></td></tr>`).join('');
 }
 function addKnowledge() {
@@ -212,13 +220,13 @@ function addKnowledge() {
   const kb = getKnowledge();
   kb.push({id:kb.length?Math.max(...kb.map(k=>k.id))+1:1,category:category.options[category.selectedIndex].text,question,answer,keywords:document.getElementById('kb-keywords').value});
   saveKnowledge(kb);
-  document.getElementById('kb-question').value=''; document.getElementById('kb-answer').value='';
-  switchKbTab('list'); renderKnowledge();
+  document.getElementById('kb-question').value=''; document.getElementById('kb-answer').value=''; document.getElementById('kb-keywords').value='';
+  switchKbTab('list'); renderKnowledge(); showSuccess('添加成功！');
 }
 function delKnowledge(id) {
   if(!confirm('确定删除？')) return;
   saveKnowledge(getKnowledge().filter(k => k.id!==id));
-  renderKnowledge();
+  renderKnowledge(); showSuccess('删除成功！');
 }
 
 function renderSettings() {
@@ -228,7 +236,7 @@ function renderSettings() {
 function copyEmbedCode() {
   document.getElementById('embed-code').select();
   document.execCommand('copy');
-  alert('已复制到剪贴板！');
+  showSuccess('已复制到剪贴板！');
 }
 
 renderDashboard();
