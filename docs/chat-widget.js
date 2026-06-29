@@ -1,31 +1,47 @@
 (function(){
+  // 企业知识库（从数据库同步）
+  const KNOWLEDGE_BASE = `【产品报价】
+Q: 你们的产品怎么收费？
+A: 我们的产品提供三个版本：基础版免费（100次/月）、专业版299元/月（无限对话）、企业版999元/月（全功能）。所有版本支持14天免费试用。
+
+Q: 有免费试用吗？
+A: 有的！14天全功能免费试用，可体验所有专业版功能。
+
+【业务流程】
+Q: 合作流程是怎样的？
+A: 1.需求沟通→2.方案定制→3.签约付款→4.部署上线（3个工作日）→5.培训交付→6.持续服务。整个流程约1-2周。
+
+【公司介绍】
+Q: 你们公司做什么的？
+A: 专注AI智能客服解决方案，基于Kimi大模型，5分钟快速部署，支持全渠道接入。服务超500家企业。
+
+【售后服务】
+Q: 售后服务怎么样？
+A: 7×24小时服务，电话400-XXX-XXXX，邮件support@example.com。紧急问题15分钟响应。
+
+Q: 怎么联系你们？
+A: 在线客服（本窗口）、电话400-XXX-XXXX（工作日9-18点）、邮箱support@example.com。`;
+
   const CONFIG = {
     apiKey: 'sk-94GVykLFgWKkU1OwC27iK1kQC0S6asUZYZRtVvINHrYRrjWP',
     apiUrl: 'https://api.moonshot.cn/v1/chat/completions',
     model: 'moonshot-v1-8k',
-    welcomeMessage: '您好！我是您的智能客服小助手 😊 有什么可以帮您的吗？',
+    welcomeMessage: '您好！欢迎来到我们的官网 👋 我是您的专属客服顾问，有任何问题随时问我！',
     aiName: '智能客服',
     maxHistory: 20
   };
 
-  // 系统提示词 - 让AI像真人客服一样回答
-  const SYSTEM_PROMPT = `你是一位专业、热情的企业客服顾问。请遵循以下原则回复客户：
+  // 系统提示词 - 基于企业知识库
+  const SYSTEM_PROMPT = `你是一位专业、热情的企业客服顾问。以下是企业知识库，请基于这些内容回答客户问题：
 
-1. **语气自然亲切**：像真人聊天一样，适当使用"您"、"亲"、"您好"等称呼，可以偶尔使用 😊👍 等表情符号增加亲和力，但不要过多。
+${KNOWLEDGE_BASE}
 
-2. **回答结构清晰**：
-   - 先礼貌问候或确认问题
-   - 给出明确、具体的答案
-   - 必要时补充相关建议
-   - 最后询问是否还有其他问题
-
-3. **口语化表达**：避免生硬的书面语，像朋友一样自然地交流。适当分段，每段不要太长。
-
-4. **主动服务**：如果用户问题不清楚，礼貌地追问细节，例如"为了更好地帮助您，能否告诉我..."
-
-5. **专业可靠**：确保信息准确，不确定时诚实说明，不要编造。
-
-6. **简洁有力**：不要啰嗦，直击要点。用户问什么就重点回答什么。`;
+【回答原则】
+1. 语气自然亲切，像真人聊天，适当用"您"、"亲"，偶尔加😊👍等表情
+2. 回答结构：先问候→给出明确答案→补充建议→问还有没有其他问题
+3. 口语化表达，简洁有力，直击要点
+4. 知识库里有的内容，准确回答；没有的，诚实说明不知道，建议联系人工
+5. 适当分段，每段不要太长`;
 
   function getVisitorId() {
     let id = localStorage.getItem('chat_visitor_id');
@@ -153,5 +169,5 @@
 
   sendBtn.onclick = sendMessage;
   inputEl.onkeypress = function(e) { if(e.key === 'Enter') sendMessage(); };
-  console.log('[AI Chat Widget] Loaded. Click the 💬 button to start chatting.');
+  console.log('[AI Chat Widget] Loaded with knowledge base.');
 })();
