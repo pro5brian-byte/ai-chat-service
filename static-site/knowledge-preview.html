@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>知识库管理界面 - 预览</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f8f9fa; }
+.layout { display: flex; height: 100vh; }
+
+/* 侧边栏 */
+.sidebar { width: 240px; background: #fff; border-right: 1px solid #e5e7eb; display: flex; flex-direction: column; }
+.logo { height: 64px; display: flex; align-items: center; padding: 0 20px; border-bottom: 1px solid #e5e7eb; gap: 8px; }
+.logo svg { width: 20px; height: 20px; color: #4f46e5; }
+.logo span { font-size: 14px; font-weight: 600; color: #111827; }
+.nav { padding: 16px 12px; flex: 1; }
+.nav-item { display: flex; align-items: center; gap: 12px; height: 40px; padding: 0 12px; border-radius: 8px; font-size: 14px; color: #6b7280; margin-bottom: 4px; cursor: pointer; }
+.nav-item:hover { background: #f8f9fa; }
+.nav-item.active { background: #e0e7ff; color: #4f46e5; font-weight: 500; border-left: 3px solid #4f46e5; margin-left: -3px; }
+.nav-item svg { width: 16px; height: 16px; }
+.user { padding: 12px; border-top: 1px solid #e5e7eb; }
+.user-card { display: flex; align-items: center; gap: 12px; padding: 8px 12px; background: #f8f9fa; border-radius: 8px; }
+.user-avatar { width: 32px; height: 32px; border-radius: 50%; background: #e0e7ff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #4f46e5; }
+.user-info { flex: 1; }
+.user-name { font-size: 14px; font-weight: 500; color: #111827; }
+.user-email { font-size: 12px; color: #6b7280; }
+
+/* 主内容区 */
+.main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.header { height: 64px; background: #fff; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; }
+.breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.breadcrumb a { color: #6b7280; text-decoration: none; }
+.breadcrumb a:hover { color: #4f46e5; }
+.breadcrumb svg { width: 14px; height: 14px; color: #9ca3af; }
+.breadcrumb span { color: #111827; font-weight: 500; }
+
+/* 内容区 */
+.content { flex: 1; overflow-y: auto; padding: 24px; }
+.page-header { margin-bottom: 20px; }
+.page-header h1 { font-size: 20px; font-weight: 600; color: #111827; }
+.page-header p { font-size: 14px; color: #6b7280; margin-top: 4px; }
+
+/* 顶部操作栏 */
+.toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; gap: 12px; }
+.filter-tags { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.tag { padding: 6px 16px; border-radius: 9999px; font-size: 14px; cursor: pointer; border: none; background: #f8f9fa; color: #6b7280; transition: all 0.2s; }
+.tag:hover { background: #e5e7eb; }
+.tag.active { background: #4f46e5; color: #fff; }
+.search-box { position: relative; width: 240px; }
+.search-box svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: #9ca3af; }
+.search-box input { width: 100%; height: 36px; padding: 0 12px 0 36px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 14px; outline: none; }
+.search-box input:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,0.1); }
+.btn-primary { height: 36px; padding: 0 16px; background: #4f46e5; color: #fff; border: none; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s; }
+.btn-primary:hover { background: #4338ca; }
+.btn-primary svg { width: 16px; height: 16px; }
+
+/* 知识条目卡片 */
+.kb-list { display: flex; flex-direction: column; gap: 12px; }
+.kb-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; transition: all 0.2s; }
+.kb-card:hover { border-color: #d1d5db; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.kb-header { display: flex; align-items: start; justify-content: space-between; margin-bottom: 8px; }
+.kb-meta { display: flex; align-items: center; gap: 8px; }
+.kb-category { padding: 4px 12px; background: #e0e7ff; color: #4f46e5; font-size: 12px; border-radius: 9999px; }
+.kb-actions { display: flex; gap: 4px; }
+.kb-actions button { width: 32px; height: 32px; border: none; background: transparent; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #9ca3af; transition: all 0.2s; }
+.kb-actions button:hover { background: #f8f9fa; color: #6b7280; }
+.kb-actions button.delete:hover { background: #fef2f2; color: #ef4444; }
+.kb-actions svg { width: 16px; height: 16px; }
+.kb-title { font-size: 16px; font-weight: 600; color: #111827; margin-bottom: 6px; }
+.kb-answer { font-size: 14px; color: #6b7280; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.kb-keywords { font-size: 12px; color: #9ca3af; margin-top: 8px; }
+
+/* 弹窗 */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 100; display: flex; align-items: center; justify-content: center; }
+.modal { background: #fff; border-radius: 12px; width: 520px; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
+.modal-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid #e5e7eb; }
+.modal-header h3 { font-size: 16px; font-weight: 600; color: #111827; }
+.modal-header button { width: 32px; height: 32px; border: none; background: transparent; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #9ca3af; }
+.modal-header button:hover { background: #f8f9fa; color: #6b7280; }
+.modal-body { padding: 20px; overflow-y: auto; }
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; font-size: 14px; font-weight: 500; color: #111827; margin-bottom: 6px; }
+.form-group label .required { color: #ef4444; }
+.form-group input, .form-group textarea, .form-group select { width: 100%; padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 14px; font-family: inherit; outline: none; transition: all 0.2s; }
+.form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,0.1); }
+.form-group textarea { resize: none; }
+.form-group select { height: 36px; background: #fff; }
+.modal-footer { display: flex; justify-content: flex-end; gap: 8px; padding: 16px 20px; border-top: 1px solid #e5e7eb; }
+.btn-secondary { height: 36px; padding: 0 16px; background: #fff; color: #111827; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 14px; cursor: pointer; transition: all 0.2s; }
+.btn-secondary:hover { background: #f8f9fa; }
+
+.hidden { display: none !important; }
+
+/* 提示标注 */
+.tooltip { position: absolute; background: #111827; color: #fff; font-size: 12px; padding: 6px 12px; border-radius: 6px; white-space: nowrap; z-index: 200; pointer-events: none; opacity: 0; transition: opacity 0.2s; }
+.tooltip.show { opacity: 1; }
+
+/* 标注样式 */
+.annotate { position: relative; }
+.annotate::after { content: attr(data-note); position: absolute; top: -28px; left: 50%; transform: translateX(-50%); background: #ef4444; color: #fff; font-size: 11px; padding: 2px 10px; border-radius: 4px; white-space: nowrap; z-index: 50; }
+.annotate-red { outline: 2px dashed #ef4444; outline-offset: 4px; border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <!-- 侧边栏 -->
+  <aside class="sidebar">
+    <div class="logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <span>AI 智能客服系统</span>
+    </div>
+    <nav class="nav">
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>仪表盘</div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>对话管理</div>
+      <div class="nav-item active annotate annotate-red" data-note="1 知识库入口">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        知识库
+      </div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>AI 设置</div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>系统设置</div>
+    </nav>
+    <div class="user">
+      <div class="user-card">
+        <div class="user-avatar">管</div>
+        <div class="user-info">
+          <div class="user-name">管理员</div>
+          <div class="user-email">admin@company.com</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- 主内容 -->
+  <div class="main">
+    <header class="header">
+      <div class="breadcrumb">
+        <a href="#">管理后台</a>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        <span>知识库</span>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="page-header">
+        <h1>知识库</h1>
+        <p style="font-size:14px;color:#6b7280;margin-top:4px;">管理 AI 客服的知识内容</p>
+      </div>
+
+      <!-- 工具栏 -->
+      <div class="toolbar">
+        <div class="filter-tags">
+          <button class="tag active">全部</button>
+          <button class="tag">常见问题</button>
+          <button class="tag">产品介绍</button>
+          <button class="tag">价格方案</button>
+          <button class="tag">售后政策</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="search-box annotate annotate-red" data-note="2 搜索已有知识">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" placeholder="搜索问题">
+          </div>
+          <button class="btn-primary annotate annotate-red" data-note="3 点击添加新知识" onclick="showModal()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            添加知识
+          </button>
+        </div>
+      </div>
+
+      <!-- 知识条目列表 -->
+      <div class="kb-list">
+        <div class="kb-card annotate annotate-red" data-note="4 每个知识条目">
+          <div class="kb-header">
+            <div class="kb-meta">
+              <span class="kb-category">常见问题</span>
+            </div>
+            <div class="kb-actions">
+              <button title="编辑"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+              <button class="delete" title="删除"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+            </div>
+          </div>
+          <div class="kb-title">你们的工作时间是什么？</div>
+          <div class="kb-answer">我们的客服团队工作时间为周一至周五 9:00-18:00，节假日除外。AI 智能客服全天 24 小时在线为您服务。</div>
+          <div class="kb-keywords">关键词: 工作时间,上班时间,客服时间,几点上班</div>
+        </div>
+
+        <div class="kb-card">
+          <div class="kb-header">
+            <div class="kb-meta">
+              <span class="kb-category">价格方案</span>
+            </div>
+            <div class="kb-actions">
+              <button title="编辑"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+              <button class="delete" title="删除"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+            </div>
+          </div>
+          <div class="kb-title">产品的价格是多少？</div>
+          <div class="kb-answer">我们的定价方案如下：基础版 ¥99/月，专业版 ¥299/月，企业版需要定制报价。年付可享受 8 折优惠。所有版本都提供 14 天免费试用。</div>
+          <div class="kb-keywords">关键词: 价格,多少钱,费用,定价,收费</div>
+        </div>
+
+        <div class="kb-card">
+          <div class="kb-header">
+            <div class="kb-meta">
+              <span class="kb-category">售后政策</span>
+            </div>
+            <div class="kb-actions">
+              <button title="编辑"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+              <button class="delete" title="删除"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+            </div>
+          </div>
+          <div class="kb-title">如何申请退款？</div>
+          <div class="kb-answer">我们提供 7 天无理由退款保障。如需退款，请联系人工客服提交申请，我们会在 3-5 个工作日内处理完毕，款项将原路退回。</div>
+          <div class="kb-keywords">关键词: 退款,退货,退钱,怎么退</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 添加/编辑弹窗 -->
+<div id="modal" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>新建知识</h3>
+      <button onclick="hideModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group annotate annotate-red" data-note="5 选择分类">
+        <label>分类</label>
+        <select>
+          <option>常见问题</option>
+          <option>产品介绍</option>
+          <option>价格方案</option>
+          <option>售后政策</option>
+        </select>
+      </div>
+      <div class="form-group annotate annotate-red" data-note="6 输入客户可能问的问题">
+        <label>问题 <span class="required">*</span></label>
+        <input type="text" placeholder="如：你们的产品多少钱？">
+      </div>
+      <div class="form-group annotate annotate-red" data-note="7 输入 AI 的标准回答">
+        <label>答案 <span class="required">*</span></label>
+        <textarea rows="6" placeholder="如：我们的产品基础版99元/月，专业版299元/月..."></textarea>
+      </div>
+      <div class="form-group annotate annotate-red" data-note="8 关键词提高匹配率">
+        <label>关键词</label>
+        <input type="text" placeholder="如：价格,多少钱,费用,怎么收费（逗号分隔）">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="hideModal()">取消</button>
+      <button class="btn-primary">保存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function showModal() { document.getElementById('modal').classList.remove('hidden'); }
+function hideModal() { document.getElementById('modal').classList.add('hidden'); }
+</script>
+
+</body>
+</html>
