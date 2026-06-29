@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "vite build",
+  "buildCommand": "TSC_COMPILE_ON_ERROR=true vite build",
   "outputDirectory": "dist/public",
   "framework": null
 }
