@@ -20,11 +20,13 @@ app.use("/api/trpc/*", async (c) => {
     createContext,
   });
 });
+app.get("/api/health", (c) => c.json({ ok: true, ts: Date.now() }));
 app.all("/api/*", (c) => c.json({ error: "Not Found" }, 404));
 
 export default app;
 
-if (env.isProduction) {
+// Only start server in local dev (NOT on Vercel)
+if (env.isProduction && !process.env.VERCEL) {
   const { serve } = await import("@hono/node-server");
   const { serveStaticFiles } = await import("./lib/vite");
   serveStaticFiles(app);
