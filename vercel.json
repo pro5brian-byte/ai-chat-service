@@ -1,4 +1,6 @@
 {
   "version": 2,
-  "outputDirectory": "static-site"
+  "buildCommand": "vite build",
+  "outputDirectory": "dist/public",
+  "framework": null
 }
