@@ -3,10 +3,29 @@
     apiKey: 'sk-94GVykLFgWKkU1OwC27iK1kQC0S6asUZYZRtVvINHrYRrjWP',
     apiUrl: 'https://api.moonshot.cn/v1/chat/completions',
     model: 'moonshot-v1-8k',
-    welcomeMessage: '您好！我是智能客服助手，有什么可以帮助您的吗？',
+    welcomeMessage: '您好！我是您的智能客服小助手 😊 有什么可以帮您的吗？',
     aiName: '智能客服',
     maxHistory: 20
   };
+
+  // 系统提示词 - 让AI像真人客服一样回答
+  const SYSTEM_PROMPT = `你是一位专业、热情的企业客服顾问。请遵循以下原则回复客户：
+
+1. **语气自然亲切**：像真人聊天一样，适当使用"您"、"亲"、"您好"等称呼，可以偶尔使用 😊👍 等表情符号增加亲和力，但不要过多。
+
+2. **回答结构清晰**：
+   - 先礼貌问候或确认问题
+   - 给出明确、具体的答案
+   - 必要时补充相关建议
+   - 最后询问是否还有其他问题
+
+3. **口语化表达**：避免生硬的书面语，像朋友一样自然地交流。适当分段，每段不要太长。
+
+4. **主动服务**：如果用户问题不清楚，礼貌地追问细节，例如"为了更好地帮助您，能否告诉我..."
+
+5. **专业可靠**：确保信息准确，不确定时诚实说明，不要编造。
+
+6. **简洁有力**：不要啰嗦，直击要点。用户问什么就重点回答什么。`;
 
   function getVisitorId() {
     let id = localStorage.getItem('chat_visitor_id');
@@ -34,7 +53,7 @@
     #ai-chat-header .close-btn { background:none; border:none; color:#fff; font-size:20px; cursor:pointer; padding:0; width:28px; height:28px; display:flex; align-items:center; justify-content:center; border-radius:50%; }
     #ai-chat-header .close-btn:hover { background:rgba(255,255,255,0.2); }
     #ai-chat-messages { flex:1; overflow-y:auto; padding:15px; display:flex; flex-direction:column; gap:10px; }
-    .ai-chat-msg { max-width:85%; padding:10px 14px; border-radius:12px; font-size:14px; line-height:1.5; word-break:break-all; }
+    .ai-chat-msg { max-width:85%; padding:10px 14px; border-radius:12px; font-size:14px; line-height:1.6; word-break:break-all; }
     .ai-chat-msg.user { align-self:flex-end; background:#4f46e5; color:#fff; border-bottom-right-radius:4px; }
     .ai-chat-msg.ai { align-self:flex-start; background:#f3f4f6; color:#333; border-bottom-left-radius:4px; }
     .ai-chat-msg .time { font-size:11px; opacity:0.6; margin-top:4px; }
@@ -113,7 +132,7 @@
       const res = await fetch(CONFIG.apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + CONFIG.apiKey },
-        body: JSON.stringify({ model: CONFIG.model, messages: [{role:'system', content:'你是一位专业、友好的智能客服助手。请用简洁的中文回答用户问题。'}, ...chatHistory], temperature: 0.7 })
+        body: JSON.stringify({ model: CONFIG.model, messages: [{role:'system', content: SYSTEM_PROMPT}, ...chatHistory], temperature: 0.8 })
       });
       const data = await res.json();
       typingEl.remove();
@@ -123,10 +142,10 @@
         saveConversation('ai', reply);
         chatHistory.push({role:'assistant', content:reply});
         if(chatHistory.length > CONFIG.maxHistory) chatHistory = chatHistory.slice(-CONFIG.maxHistory);
-      } else { addMessage('ai', '抱歉，服务暂时异常，请稍后再试。'); }
+      } else { addMessage('ai', '抱歉，服务暂时异常，请稍后再试 😅'); }
     } catch(e) {
       typingEl.remove();
-      addMessage('ai', '抱歉，网络连接失败，请检查网络后重试。');
+      addMessage('ai', '抱歉，网络连接失败，请检查网络后重试 😅');
     }
     sendBtn.disabled = false;
     inputEl.focus();
