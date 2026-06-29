@@ -1,57 +1,49 @@
 (function(){
-  // 企业宣传片拍摄 - 知识库
-  const KNOWLEDGE_BASE = `【拍摄服务】
-Q: 你们可以拍摄企业宣传片吗？
-A: 当然可以！📹 我们专注于企业宣传片拍摄，拥有专业的拍摄团队和后期制作能力。我们的服务包括：企业宣传片、产品展示视频、工厂实拍、人物访谈/老板IP打造、活动记录、短视频。我们会根据您的需求量身定制拍摄方案。
+  const KNOWLEDGE_BASE = `【影月影视业务】
+企业宣传片、广告片、短视频、产品视频、活动记录、人物访谈、工厂实拍、品牌故事片、微电影。有专业导演和拍摄团队，经验丰富，质量有保障。可加急。
 
-【价格报价】
-Q: 拍摄企业宣传片怎么收费？
-A: 我们有三个套餐：🎬 基础版3,999元（1天拍摄，1-2分钟成片）；🎬 标准版9,999元（2-3天拍摄，3-5分钟成片，含创意策划）；🎬 旗舰版19,999元（5-7天拍摄，5-10分钟成片，含全案策划+特效）。具体价格根据需求调整，需要推荐合适方案吗？
+【价格参考】
+企业宣传片3999-19999元，广告片按创意报价，短视频500-3000元/条。具体看需求详聊。
 
-Q: 有免费试用或免费咨询吗？
-A: 有的！我们可以先为您提供免费的拍摄创意方案 📋，包含脚本大纲和分镜设计，您看看效果再决定是否合作。满意后再签约！
-
-【业务流程】
-Q: 拍摄流程是怎样的？
-A: 1️⃣需求沟通→2️⃣创意策划（3-5天）→3️⃣前期准备→4️⃣现场拍摄（1-5天）→5️⃣后期制作（7-15天）→6️⃣修改交付。整个流程约3-4周，有紧急需求可加急1周交付。
-
-Q: 拍摄需要多长时间？
-A: 简单产品视频1天，企业宣传片2-3天，品牌形象片3-5天。完整项目周期：简单2-3周，标准3-4周，复杂4-6周。
-
-【常见问题】
-Q: 需要准备什么？
-A: 📋 素材准备（企业资料、产品样品、资质证书）；👥 人员安排（确定出镜人员）；🏢 场地准备（办公区整理、生产线清洁）。拍摄当天有导演现场指导，不用担心！
-
-Q: 能看一下案例吗？
-A: 我们拍摄过众多企业宣传片，涵盖制造业、科技公司、电商企业、医疗健康、教育培训等行业。您是什么行业？我可以推荐相关案例参考。
-
-Q: 可以开发票吗？
-A: 可以的！提供增值税普通发票和专用发票，支持对公转账和分期付款（3:5:2或5:5）。
-
-Q: 不满意可以修改吗？
-A: 当然可以！修改到您满意为止。初稿完成后提供免费修改3次，每次3-5个工作日。`;
+【联系方式】
+导演微信：18621893879`;
 
   const CONFIG = {
     apiKey: 'sk-94GVykLFgWKkU1OwC27iK1kQC0S6asUZYZRtVvINHrYRrjWP',
     apiUrl: 'https://api.moonshot.cn/v1/chat/completions',
     model: 'moonshot-v1-8k',
-    welcomeMessage: '您好！👋 欢迎来到我们的官网。我们是专业的企业宣传片拍摄团队，请问您想拍摄什么类型的视频呢？',
-    aiName: '在线客服',
-    maxHistory: 20
+    welcomeMessage: '您好！我是影月影视的客服，咱们专拍企业宣传片、广告片、短视频，您想拍什么类型的？',
+    aiName: '影月影视',
+    maxHistory: 10
   };
 
-  // 系统提示词 - 企业宣传片拍摄客服
-  const SYSTEM_PROMPT = `你是【XX影视传媒】的智能客服顾问，我们是一家专注于企业宣传片拍摄制作的公司。请基于以下知识库回答客户问题：
+  const SYSTEM_PROMPT = `你是【影月影视】的客服小影，一家专业视频拍摄制作公司。
 
-${KNOWLEDGE_BASE}
+公司业务：企业宣传片、广告片、短视频、产品视频、活动记录、人物访谈、工厂实拍等。
 
-【回答原则】
-1. 语气热情专业，像资深销售顾问一样主动服务
-2. 回答结构：先确认客户需求→给出具体方案/报价→引导下一步行动
-3. 适当使用emoji增加亲和力，但不要过多
-4. 报价和流程要准确，不能编造
-5. 主动询问客户需求，引导留下联系方式或安排进一步沟通
-6. 每次回复最后可以问"您还有什么想了解的吗？"或"需要我帮您安排吗？"`;
+知识库：${KNOWLEDGE_BASE}
+
+【核心要求 - 必须遵守】
+1. 每次回复**绝对不能超过50个字**（包括标点）
+2. 语气像真人客服，热情、口语化，不要太正式
+3. 像朋友聊天一样自然
+4. 不要长篇大论，简洁直接
+
+【回复策略】
+1. 先简短回答客户问题（确认能拍+有经验）
+2. 然后引导加微信留联系方式
+3. 每次回复结尾都要引导联系导演，用以下话术之一：
+   - "加导演微信详聊：18621893879"
+   - "留个电话，导演联系您"
+   - "微信18621893879，导演一对一沟通"
+   - "方便留个联系方式吗？导演直接跟您对接"
+
+【示例回复】
+客户：你们拍企业宣传片吗？
+小影：当然拍！咱们团队经验很丰富，各行业都拍过。加导演微信详聊：18621893879 😊
+
+客户：多少钱？
+小影：宣传片3999起，具体看需求。您加导演微信18621893879，给您详细报价~`;
 
   function getVisitorId() {
     let id = localStorage.getItem('chat_visitor_id');
@@ -72,22 +64,21 @@ ${KNOWLEDGE_BASE}
 
   const style = document.createElement('style');
   style.textContent = `
-    #ai-chat-btn { position:fixed; bottom:20px; right:20px; width:60px; height:60px; border-radius:50%; background:#4f46e5; color:#fff; border:none; cursor:pointer; font-size:28px; box-shadow:0 4px 20px rgba(0,0,0,0.2); z-index:99999; display:flex; align-items:center; justify-content:center; transition:transform 0.2s; }
+    #ai-chat-btn { position:fixed; bottom:20px; right:20px; width:60px; height:60px; border-radius:50%; background:#e11d48; color:#fff; border:none; cursor:pointer; font-size:24px; box-shadow:0 4px 20px rgba(0,0,0,0.2); z-index:99999; display:flex; align-items:center; justify-content:center; transition:transform 0.2s; font-family:sans-serif; }
     #ai-chat-btn:hover { transform:scale(1.05); }
-    #ai-chat-box { position:fixed; bottom:90px; right:20px; width:380px; height:520px; background:#fff; border-radius:16px; box-shadow:0 8px 40px rgba(0,0,0,0.15); z-index:99998; display:none; flex-direction:column; overflow:hidden; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC',sans-serif; }
-    #ai-chat-header { background:#4f46e5; color:#fff; padding:16px 20px; font-weight:600; font-size:15px; display:flex; align-items:center; justify-content:space-between; }
-    #ai-chat-header .close-btn { background:none; border:none; color:#fff; font-size:20px; cursor:pointer; padding:0; width:28px; height:28px; display:flex; align-items:center; justify-content:center; border-radius:50%; }
-    #ai-chat-header .close-btn:hover { background:rgba(255,255,255,0.2); }
-    #ai-chat-messages { flex:1; overflow-y:auto; padding:15px; display:flex; flex-direction:column; gap:10px; }
-    .ai-chat-msg { max-width:85%; padding:10px 14px; border-radius:12px; font-size:14px; line-height:1.6; word-break:break-all; }
-    .ai-chat-msg.user { align-self:flex-end; background:#4f46e5; color:#fff; border-bottom-right-radius:4px; }
+    #ai-chat-box { position:fixed; bottom:90px; right:20px; width:380px; height:500px; background:#fff; border-radius:16px; box-shadow:0 8px 40px rgba(0,0,0,0.15); z-index:99998; display:none; flex-direction:column; overflow:hidden; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC',sans-serif; }
+    #ai-chat-header { background:#e11d48; color:#fff; padding:14px 18px; font-weight:600; font-size:15px; display:flex; align-items:center; justify-content:space-between; }
+    #ai-chat-header .close-btn { background:none; border:none; color:#fff; font-size:18px; cursor:pointer; padding:0; width:28px; height:28px; display:flex; align-items:center; justify-content:center; border-radius:50%; }
+    #ai-chat-messages { flex:1; overflow-y:auto; padding:12px; display:flex; flex-direction:column; gap:8px; }
+    .ai-chat-msg { max-width:88%; padding:8px 12px; border-radius:12px; font-size:14px; line-height:1.5; word-break:break-all; }
+    .ai-chat-msg.user { align-self:flex-end; background:#e11d48; color:#fff; border-bottom-right-radius:4px; }
     .ai-chat-msg.ai { align-self:flex-start; background:#f3f4f6; color:#333; border-bottom-left-radius:4px; }
-    .ai-chat-msg .time { font-size:11px; opacity:0.6; margin-top:4px; }
-    #ai-chat-input-area { padding:12px 15px; border-top:1px solid #eee; display:flex; gap:8px; align-items:center; }
-    #ai-chat-input { flex:1; padding:10px 14px; border:1px solid #e5e7eb; border-radius:10px; font-size:14px; outline:none; }
-    #ai-chat-input:focus { border-color:#4f46e5; }
-    #ai-chat-send { padding:10px 18px; background:#4f46e5; color:#fff; border:none; border-radius:10px; cursor:pointer; font-size:14px; }
-    #ai-chat-send:disabled { opacity:0.5; cursor:not-allowed; }
+    .ai-chat-msg .time { font-size:11px; opacity:0.5; margin-top:3px; }
+    #ai-chat-input-area { padding:10px 12px; border-top:1px solid #eee; display:flex; gap:6px; align-items:center; }
+    #ai-chat-input { flex:1; padding:8px 12px; border:1px solid #e5e7eb; border-radius:20px; font-size:14px; outline:none; }
+    #ai-chat-input:focus { border-color:#e11d48; }
+    #ai-chat-send { padding:8px 16px; background:#e11d48; color:#fff; border:none; border-radius:20px; cursor:pointer; font-size:14px; }
+    #ai-chat-send:disabled { opacity:0.5; }
     .typing-dot { display:inline-block; width:6px; height:6px; background:#999; border-radius:50%; margin:0 2px; animation:typing 1.4s infinite; }
     .typing-dot:nth-child(2) { animation-delay:0.2s; }
     .typing-dot:nth-child(3) { animation-delay:0.4s; }
@@ -98,14 +89,14 @@ ${KNOWLEDGE_BASE}
 
   const btn = document.createElement('button');
   btn.id = 'ai-chat-btn';
-  btn.innerHTML = '💬';
-  btn.title = '在线客服';
+  btn.innerHTML = '📹';
+  btn.title = '影月影视';
   document.body.appendChild(btn);
 
   const box = document.createElement('div');
   box.id = 'ai-chat-box';
   box.innerHTML = `
-    <div id="ai-chat-header"><span>🎬 ${CONFIG.aiName}</span><button class="close-btn" onclick="document.getElementById('ai-chat-box').style.display='none'">✕</button></div>
+    <div id="ai-chat-header"><span>影月影视</span><button class="close-btn" onclick="document.getElementById('ai-chat-box').style.display='none'">✕</button></div>
     <div id="ai-chat-messages"></div>
     <div id="ai-chat-input-area"><input type="text" id="ai-chat-input" placeholder="输入问题..." autocomplete="off"><button id="ai-chat-send">发送</button></div>
   `;
@@ -158,7 +149,7 @@ ${KNOWLEDGE_BASE}
       const res = await fetch(CONFIG.apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + CONFIG.apiKey },
-        body: JSON.stringify({ model: CONFIG.model, messages: [{role:'system', content: SYSTEM_PROMPT}, ...chatHistory], temperature: 0.8 })
+        body: JSON.stringify({ model: CONFIG.model, messages: [{role:'system', content: SYSTEM_PROMPT}, ...chatHistory], temperature: 0.7, max_tokens: 120 })
       });
       const data = await res.json();
       typingEl.remove();
@@ -168,10 +159,10 @@ ${KNOWLEDGE_BASE}
         saveConversation('ai', reply);
         chatHistory.push({role:'assistant', content:reply});
         if(chatHistory.length > CONFIG.maxHistory) chatHistory = chatHistory.slice(-CONFIG.maxHistory);
-      } else { addMessage('ai', '抱歉，服务暂时异常，请稍后再试 😅'); }
+      } else { addMessage('ai', '不好意思，网络有点卡，您直接加导演微信 18621893879 聊吧 😊'); }
     } catch(e) {
       typingEl.remove();
-      addMessage('ai', '抱歉，网络连接失败，请检查网络后重试 😅');
+      addMessage('ai', '网络不太稳，您加导演微信 18621893879，一对一沟通更方便~');
     }
     sendBtn.disabled = false;
     inputEl.focus();
@@ -179,5 +170,5 @@ ${KNOWLEDGE_BASE}
 
   sendBtn.onclick = sendMessage;
   inputEl.onkeypress = function(e) { if(e.key === 'Enter') sendMessage(); };
-  console.log('[AI Chat Widget] Loaded for video production service.');
+  console.log('[影月影视] AI客服已加载');
 })();
