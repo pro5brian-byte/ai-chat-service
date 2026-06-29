@@ -1,0 +1,136 @@
+<!-- ============================================================
+  AI 智能客服 - 企业官网嵌入代码
+  
+  使用说明：
+  1. 把这段代码复制到你企业官网的 <body> 标签末尾（</body> 前）
+  2. 把 CHAT_SERVER 改成你的 Vercel 部署地址
+  3. 保存，刷新网页，右下角就会出现聊天按钮
+  ============================================================ -->
+
+<script>
+(function() {
+  // ==========================================
+  // 第 1 步：改成你的部署地址（部署后我会给你）
+  // 示例格式：https://ai-chat-yourname.vercel.app
+  // ==========================================
+  var CHAT_SERVER = 'https://ai-chat-demo.vercel.app';
+  
+  // ==========================================
+  // 第 2 步：可选配置（不改也能用）
+  // ==========================================
+  var CONFIG = {
+    // 按钮位置：'right' = 右下角, 'left' = 左下角
+    position: 'right',
+    
+    // 主题色
+    color: '#4f46e5',
+    
+    // 聊天窗口尺寸：'standard' = 标准, 'compact' = 紧凑, 'large' = 宽大
+    size: 'standard'
+  };
+
+  // 窗口尺寸配置
+  var SIZES = {
+    compact: { width: '340px', height: '480px' },
+    standard: { width: '380px', height: '560px' },
+    large: { width: '420px', height: '640px' }
+  };
+  var size = SIZES[CONFIG.size] || SIZES.standard;
+
+  // ---- 创建 iframe ----
+  var iframe = document.createElement('iframe');
+  iframe.src = CHAT_SERVER;
+  iframe.id = 'ai-chat-iframe';
+  iframe.setAttribute('title', 'AI智能客服');
+  iframe.style.cssText = [
+    'position: fixed',
+    'bottom: 0',
+    CONFIG.position === 'left' ? 'left: 0' : 'right: 0',
+    'width: ' + size.width,
+    'height: ' + size.height,
+    'max-height: 90vh',
+    'border: none',
+    'border-radius: 16px 16px 0 0',
+    'z-index: 999999',
+    'display: none',
+    'overflow: hidden',
+    'box-shadow: 0 -4px 24px rgba(0,0,0,0.12)',
+    'background: #fff',
+    'transition: transform 0.3s ease, opacity 0.3s ease',
+    'transform: translateY(20px)',
+    'opacity: 0'
+  ].join(';');
+
+  // ---- 创建浮动按钮 ----
+  var btn = document.createElement('button');
+  btn.id = 'ai-chat-btn';
+  btn.setAttribute('aria-label', '打开AI客服');
+  btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>';
+  btn.style.cssText = [
+    'position: fixed',
+    'bottom: 24px',
+    CONFIG.position === 'left' ? 'left: 24px' : 'right: 24px',
+    'z-index: 9999999',
+    'width: 56px',
+    'height: 56px',
+    'border-radius: 50%',
+    'background: ' + CONFIG.color,
+    'color: #fff',
+    'border: none',
+    'cursor: pointer',
+    'display: flex',
+    'align-items: center',
+    'justify-content: center',
+    'box-shadow: 0 4px 16px ' + CONFIG.color + '40',
+    'transition: all 0.2s ease',
+    'font-size: 0'
+  ].join(';');
+
+  // 按钮 hover 效果
+  btn.onmouseenter = function() {
+    this.style.transform = 'scale(1.08)';
+    this.style.boxShadow = '0 6px 20px ' + CONFIG.color + '60';
+  };
+  btn.onmouseleave = function() {
+    this.style.transform = 'scale(1)';
+    this.style.boxShadow = '0 4px 16px ' + CONFIG.color + '40';
+  };
+
+  // 点击切换显示/隐藏
+  var isOpen = false;
+  btn.onclick = function() {
+    var f = document.getElementById('ai-chat-iframe');
+    if (!isOpen) {
+      f.style.display = 'block';
+      setTimeout(function() {
+        f.style.transform = 'translateY(0)';
+        f.style.opacity = '1';
+      }, 10);
+      btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+      btn.setAttribute('aria-label', '关闭AI客服');
+    } else {
+      f.style.transform = 'translateY(20px)';
+      f.style.opacity = '0';
+      setTimeout(function() {
+        f.style.display = 'none';
+      }, 300);
+      btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>';
+      btn.setAttribute('aria-label', '打开AI客服');
+    }
+    isOpen = !isOpen;
+  };
+
+  // ---- 插入页面 ----
+  document.body.appendChild(iframe);
+  document.body.appendChild(btn);
+
+  // 接收 iframe 消息（可选：监听聊天事件）
+  window.addEventListener('message', function(e) {
+    if (e.origin !== CHAT_SERVER) return;
+    // 可以在这里处理聊天事件，比如收到新消息提醒
+    // console.log('Chat event:', e.data);
+  });
+
+  console.log('[AI Chat] 智能客服已加载');
+})();
+</script>
