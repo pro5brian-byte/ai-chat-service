@@ -10,7 +10,7 @@
     },
     {
       "source": "/assets/(.*)",
-      "dest": "/assets/$1"
+      "destination": "/assets/$1"
     },
     {
       "source": "/(.*)",
