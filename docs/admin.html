@@ -454,12 +454,12 @@ input:checked + .slider::before { transform: translateX(20px); }
     <div class="setting-item">
       <h4>开场欢迎语</h4>
       <p>客户打开聊天窗口时自动发送的第一句话</p>
-      <textarea id="ai-welcome" onchange="saveAISettings()">您好！我是影月影视的小影~ 咱们专做企业宣传片、广告片、短视频等影视制作，您想拍什么？</textarea>
+      <textarea id="ai-welcome" onchange="saveAISettings()">您好！我是影月影视的小影，很高兴为您服务~ 咱们专做企业宣传片、广告片、短视频等影视制作，请问您想拍什么类型的片子呢？😊</textarea>
     </div>
     <div class="setting-item">
-      <h4>微信引导话术</h4>
-      <p>第3句后引导客户加微信的话术（{wx}会被替换为导演微信号）</p>
-      <textarea id="ai-wx-prompt" onchange="saveAISettings()">方便的话可以加导演微信{wx}，给您详细方案~</textarea>
+      <h4>联系方式询问话术</h4>
+      <p>第3句后询问客户联系方式的话术（先问称呼，再问是否方便留联系方式，最后说让导演加客户）</p>
+      <textarea id="ai-wx-prompt" onchange="saveAISettings()">对了，聊了这么多还没请教您怎么称呼？方便留个微信或手机号吗？我把您的需求跟导演说一下，让导演直接加您沟通~</textarea>
     </div>
     <div class="setting-item">
       <h4>导演微信号</h4>
@@ -607,13 +607,15 @@ function saveSettings(s) {
 function getDefaultKnowledge() {
   return [
     {id:1,category:'公司介绍',question:'你们公司是做什么的？',answer:'影月影视是一家专业的影视制作公司，成立于2012年，专注企业宣传片、广告片、短视频、产品视频、活动记录等影视制作13年，服务过500多家上市公司和行业龙头企业。',keywords:'公司,业务,做什么'},
-    {id:2,category:'产品报价',question:'拍宣传片多少钱？',answer:'所有项目都是根据需求定制的呢。价格主要看拍摄天数、后期复杂度和是否需要动画特效，一般区间5万-50万。方便加导演微信18621893879，给您详细方案~',keywords:'价格,多少钱,费用,报价'},
+    {id:2,category:'产品报价',question:'拍宣传片多少钱？',answer:'所有项目都是根据需求定制的呢，看拍摄天数和后期复杂度，一般区间5万-50万。方便的话您可以留个联系方式，我让导演直接加您给您详细方案~',keywords:'价格,多少钱,费用,报价'},
     {id:3,category:'业务流程',question:'合作流程是怎样的？',answer:'流程很简单：1.需求沟通→2.方案定制→3.签约付款→4.拍摄制作→5.后期交付。整个周期一般2-4周，具体看项目复杂度。',keywords:'流程,合作,签约,步骤'},
     {id:4,category:'公司介绍',question:'你们有什么优势？',answer:'我们有3大核心优势：①13年行业经验，服务过华为、腾讯、比亚迪等500多家上市公司；②资深导演团队+电影级设备；③从策划到后期一站式服务，省心省力。',keywords:'优势,为什么选你们,特色'},
     {id:5,category:'产品报价',question:'有免费方案吗？',answer:'有的！前期咨询和方案策划完全免费。我们可以先了解您的需求，免费出一份初步方案和预算。',keywords:'免费,方案'},
     {id:6,category:'常见问题',question:'拍摄需要多久？',answer:'一般企业宣传片拍摄2-3天，后期制作1-2周。具体时间看项目需求，简单的短视频3-5天就能交付。',keywords:'时间,多久,周期'},
     {id:7,category:'售后服务',question:'后期修改怎么收费？',answer:'我们包含3次免费修改。超出次数后根据修改量收费，小调整一般不收费。交付后也有售后保障。',keywords:'售后,修改,服务'},
     {id:8,category:'技术能力',question:'能做动画特效吗？',answer:'当然可以！我们有专业的三维动画和MG动画团队，能做产品演示动画、建筑漫游、特效包装等。',keywords:'动画,特效,三维,MG'},
+    {id:9,category:'公司介绍',question:'你们公司地址在哪里？',answer:'我们总部在上海嘉定区，在其他城市也有分部，具体分部信息您可以查看网站页面底部。全国业务都可以承接的！',keywords:'地址,位置,在哪里,公司地址'},
+    {id:10,category:'公司介绍',question:'你们在上海哪里？',answer:'我们总部在上海嘉定区。其他城市也有分部，具体可以查看网站底部。全国各地的项目我们都可以承接！',keywords:'上海,嘉定,地址'},
   ];
 }
 
