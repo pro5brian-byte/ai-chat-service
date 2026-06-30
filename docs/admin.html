@@ -3,242 +3,1183 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI智能客服 - 管理后台</title>
+<title>影月影视 AI智能客服 - 管理后台</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif; background: #f5f7fa; color: #333; }
-.sidebar { width: 220px; background: #1e293b; color: #fff; position: fixed; left: 0; top: 0; bottom: 0; padding: 20px 0; }
-.sidebar .logo { padding: 0 20px 20px; font-size: 18px; font-weight: bold; border-bottom: 1px solid #334155; margin-bottom: 15px; }
-.sidebar .logo span { color: #60a5fa; }
-.sidebar .menu-item { padding: 12px 20px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 10px; font-size: 14px; }
-.sidebar .menu-item:hover, .sidebar .menu-item.active { background: #334155; }
-.main { margin-left: 220px; padding: 30px; }
-.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-.header h1 { font-size: 24px; }
-.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
-.stat-card { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
-.stat-card .label { font-size: 13px; color: #888; margin-bottom: 8px; }
-.stat-card .value { font-size: 32px; font-weight: bold; color: #1e293b; }
-.card { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 20px; }
-.card h2 { font-size: 16px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif; background: #f8fafc; color: #334155; }
+
+/* 侧边栏 */
+.sidebar { width: 240px; background: #1e293b; color: #fff; position: fixed; left: 0; top: 0; bottom: 0; padding: 0; display: flex; flex-direction: column; z-index: 100; transition: transform 0.3s; }
+.sidebar .logo { padding: 24px 24px 20px; font-size: 18px; font-weight: 700; border-bottom: 1px solid #334155; display: flex; align-items: center; gap: 12px; }
+.sidebar .logo .icon { width: 36px; height: 36px; background: #eb6a3e; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+.sidebar .logo span { color: #f97316; }
+.sidebar .menu { padding: 12px 0; flex: 1; }
+.sidebar .menu-item { padding: 12px 24px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 12px; font-size: 14px; color: #94a3b8; border-left: 3px solid transparent; }
+.sidebar .menu-item:hover { background: #334155; color: #fff; }
+.sidebar .menu-item.active { background: #334155; color: #fff; border-left-color: #eb6a3e; }
+.sidebar .menu-item .emoji { font-size: 16px; width: 20px; text-align: center; }
+.sidebar .footer { padding: 16px 24px; border-top: 1px solid #334155; font-size: 12px; color: #64748b; }
+
+/* 主内容区 */
+.main { margin-left: 240px; padding: 24px 32px; min-height: 100vh; }
+
+/* 顶部栏 */
+.topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; }
+.topbar h1 { font-size: 22px; color: #1e293b; }
+.topbar .subtitle { font-size: 13px; color: #94a3b8; margin-top: 4px; font-weight: 400; }
+.topbar .actions { display: flex; gap: 12px; align-items: center; }
+.topbar .refresh-btn { padding: 8px 16px; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; font-size: 13px; color: #475569; display: flex; align-items: center; gap: 6px; transition: 0.2s; }
+.topbar .refresh-btn:hover { background: #f1f5f9; }
+
+/* 统计卡片 */
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 28px; }
+.stat-card { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid #f1f5f9; position: relative; overflow: hidden; }
+.stat-card::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+.stat-card:nth-child(1)::after { background: #eb6a3e; }
+.stat-card:nth-child(2)::after { background: #3b82f6; }
+.stat-card:nth-child(3)::after { background: #10b981; }
+.stat-card:nth-child(4)::after { background: #8b5cf6; }
+.stat-card .label { font-size: 13px; color: #94a3b8; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+.stat-card .value { font-size: 32px; font-weight: 700; color: #1e293b; line-height: 1; }
+.stat-card .change { font-size: 12px; margin-top: 8px; color: #10b981; }
+.stat-card .change.negative { color: #ef4444; }
+
+/* 卡片通用 */
+.card { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid #f1f5f9; margin-bottom: 20px; }
+.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.card-header h2 { font-size: 16px; color: #1e293b; font-weight: 600; }
+.card-header .actions { display: flex; gap: 8px; }
+
+/* 表格 */
+.table-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: 14px; }
-th { text-align: left; padding: 12px; color: #888; font-weight: 500; border-bottom: 1px solid #eee; font-size: 13px; }
-td { padding: 14px 12px; border-bottom: 1px solid #f5f5f5; vertical-align: top; }
-tr:hover { background: #fafafa; }
-.badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 12px; }
+th { text-align: left; padding: 12px 16px; color: #94a3b8; font-weight: 500; border-bottom: 1px solid #f1f5f9; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+td { padding: 14px 16px; border-bottom: 1px solid #f8fafc; vertical-align: middle; font-size: 14px; }
+tr:hover { background: #fafaf9; }
+
+/* 标签 */
+.badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
 .badge-blue { background: #dbeafe; color: #1e40af; }
-.msg-preview { max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #666; }
-.tab-bar { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-.tab { padding: 8px 18px; border-radius: 8px; cursor: pointer; font-size: 14px; color: #666; border: none; background: none; }
-.tab.active { background: #eff6ff; color: #4f46e5; font-weight: 500; }
-.kb-form { display: grid; gap: 15px; margin-bottom: 20px; }
-.kb-form input, .kb-form textarea, .kb-form select { padding: 10px 14px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px; outline: none; font-family: inherit; }
-.kb-form textarea { min-height: 100px; resize: vertical; }
-.kb-form .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-.btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; }
-.btn-primary { background: #4f46e5; color: #fff; }
+.badge-green { background: #dcfce7; color: #166534; }
+.badge-orange { background: #ffedd5; color: #9a3412; }
+.badge-gray { background: #f1f5f9; color: #475569; }
+.badge-red { background: #fee2e2; color: #991b1b; }
+
+/* 访客ID */
+.visitor-id { font-family: 'Courier New', monospace; font-size: 12px; color: #64748b; background: #f8fafc; padding: 4px 8px; border-radius: 6px; }
+
+/* 消息预览 */
+.msg-preview { max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #64748b; font-size: 13px; }
+
+/* 按钮 */
+.btn { padding: 8px 16px; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+.btn-primary { background: #eb6a3e; color: #fff; }
+.btn-primary:hover { background: #d55a2e; }
+.btn-secondary { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+.btn-secondary:hover { background: #e2e8f0; }
+.btn-success { background: #10b981; color: #fff; }
+.btn-success:hover { background: #059669; }
 .btn-danger { background: #ef4444; color: #fff; }
-.empty-state { text-align: center; padding: 60px 20px; color: #999; }
-#embed-code { width: 100%; min-height: 120px; padding: 15px; border: 1px solid #e5e7eb; border-radius: 8px; font-family: monospace; font-size: 13px; background: #f8f9fa; }
-.success-msg { background: #dcfce7; color: #166534; padding: 12px 16px; border-radius: 8px; margin-bottom: 15px; display: none; }
-.db-info { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 16px; margin-top: 15px; }
-.db-info table { margin-top: 10px; }
-.db-info td { padding: 6px 0; border: none; font-size: 13px; }
+.btn-danger:hover { background: #dc2626; }
+.btn-sm { padding: 5px 12px; font-size: 12px; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* 表单 */
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; font-size: 13px; font-weight: 500; color: #475569; margin-bottom: 6px; }
+.form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; outline: none; font-family: inherit; transition: 0.2s; background: #fff; }
+.form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: #eb6a3e; box-shadow: 0 0 0 3px rgba(235,106,62,0.1); }
+.form-group textarea { min-height: 100px; resize: vertical; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+/* 搜索和筛选 */
+.filter-bar { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+.filter-bar input, .filter-bar select { padding: 8px 14px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; outline: none; }
+.filter-bar input { min-width: 240px; }
+
+/* 空状态 */
+.empty-state { text-align: center; padding: 60px 20px; color: #94a3b8; }
+.empty-state .icon { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+.empty-state p { font-size: 14px; }
+
+/* 成功/错误提示 */
+.toast { padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 14px; display: none; animation: slideIn 0.3s; }
+.toast.show { display: block; }
+.toast-success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+.toast-error { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+@keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* 标签页 */
+.tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; }
+.tab { padding: 8px 18px; border-radius: 8px; cursor: pointer; font-size: 14px; color: #64748b; border: none; background: none; font-weight: 500; transition: 0.2s; }
+.tab:hover { background: #f8fafc; color: #334155; }
+.tab.active { background: #eff6ff; color: #eb6a3e; }
+
+/* 开关 */
+.switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #e2e8f0; transition: 0.3s; border-radius: 24px; }
+.slider::before { position: absolute; content: ''; height: 18px; width: 18px; left: 3px; bottom: 3px; background: #fff; transition: 0.3s; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
+input:checked + .slider { background: #eb6a3e; }
+input:checked + .slider::before { transform: translateX(20px); }
+.switch-label { margin-left: 12px; font-size: 14px; color: #475569; }
+.switch-wrap { display: flex; align-items: center; margin-bottom: 16px; }
+
+/* 模态框 */
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; display: none; align-items: center; justify-content: center; }
+.modal-overlay.show { display: flex; }
+.modal { background: #fff; border-radius: 16px; width: 90%; max-width: 700px; max-height: 85vh; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+.modal-header { padding: 20px 24px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
+.modal-header h3 { font-size: 16px; color: #1e293b; }
+.modal-close { background: none; border: none; font-size: 20px; color: #94a3b8; cursor: pointer; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: 0.2s; }
+.modal-close:hover { background: #f8fafc; color: #334155; }
+.modal-body { padding: 24px; overflow-y: auto; flex: 1; }
+.modal-footer { padding: 16px 24px; border-top: 1px solid #f1f5f9; display: flex; justify-content: flex-end; gap: 10px; }
+
+/* 对话气泡 */
+.chat-bubble { display: flex; margin-bottom: 12px; }
+.chat-bubble.user { justify-content: flex-end; }
+.chat-bubble.ai { justify-content: flex-start; }
+.chat-bubble .bubble { max-width: 80%; padding: 10px 14px; border-radius: 12px; font-size: 14px; line-height: 1.5; word-break: break-all; }
+.chat-bubble.user .bubble { background: #eb6a3e; color: #fff; border-bottom-right-radius: 4px; }
+.chat-bubble.ai .bubble { background: #f8fafc; color: #334155; border-bottom-left-radius: 4px; border: 1px solid #f1f5f9; }
+.chat-bubble .meta { font-size: 11px; color: #94a3b8; margin-top: 4px; }
+.chat-bubble .avatar { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; margin-right: 8px; flex-shrink: 0; }
+.chat-bubble.ai .avatar { background: #dbeafe; color: #1e40af; }
+.chat-bubble.user .avatar { background: #eb6a3e; color: #fff; margin-right: 0; margin-left: 8px; }
+
+/* 嵌入代码 */
+.code-block { width: 100%; min-height: 120px; padding: 16px; border: 1px solid #e2e8f0; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 13px; background: #f8fafc; color: #334155; resize: vertical; }
+
+/* 设置项 */
+.setting-item { padding: 20px 0; border-bottom: 1px solid #f8fafc; }
+.setting-item:last-child { border-bottom: none; }
+.setting-item h4 { font-size: 15px; color: #1e293b; margin-bottom: 6px; }
+.setting-item p { font-size: 13px; color: #94a3b8; margin-bottom: 12px; }
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(-100%); }
+  .main { margin-left: 0; padding: 16px; }
+  .stats { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* 趋势图 */
+.chart-container { height: 200px; position: relative; margin-top: 16px; }
+.chart-placeholder { display: flex; align-items: flex-end; justify-content: space-around; height: 160px; padding: 0 20px; }
+.chart-bar { width: 8%; background: #fed7aa; border-radius: 4px 4px 0 0; transition: 0.3s; min-height: 4px; position: relative; }
+.chart-bar:hover { background: #eb6a3e; }
+.chart-bar-label { position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); font-size: 10px; color: #94a3b8; white-space: nowrap; }
+
+/* 知识库分类筛选 */
+.category-filters { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+.category-filter { padding: 6px 14px; border-radius: 20px; font-size: 13px; cursor: pointer; background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; transition: 0.2s; }
+.category-filter:hover { background: #f1f5f9; }
+.category-filter.active { background: #eb6a3e; color: #fff; border-color: #eb6a3e; }
+
+/* 分页 */
+.pagination { display: flex; justify-content: center; gap: 6px; margin-top: 20px; }
+.page-btn { padding: 6px 12px; border: 1px solid #e2e8f0; background: #fff; border-radius: 6px; cursor: pointer; font-size: 13px; color: #475569; transition: 0.2s; }
+.page-btn:hover { background: #f8fafc; }
+.page-btn.active { background: #eb6a3e; color: #fff; border-color: #eb6a3e; }
+.page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 </style>
 </head>
 <body>
 
+<!-- 侧边栏 -->
 <div class="sidebar">
-  <div class="logo"><span>AI</span> 智能客服</div>
-  <div class="menu-item active" onclick="switchTab('dashboard')">📊 数据概览</div>
-  <div class="menu-item" onclick="switchTab('conversations')">💬 聊天记录</div>
-  <div class="menu-item" onclick="switchTab('knowledge')">📚 知识库</div>
-  <div class="menu-item" onclick="switchTab('settings')">⚙️ 系统设置</div>
+  <div class="logo">
+    <div class="icon">📹</div>
+    <div>影月影视<span>AI客服</span></div>
+  </div>
+  <div class="menu">
+    <div class="menu-item active" onclick="switchTab('dashboard')" data-tab="dashboard">
+      <span class="emoji">📊</span> 数据概览
+    </div>
+    <div class="menu-item" onclick="switchTab('visitors')" data-tab="visitors">
+      <span class="emoji">👥</span> 访客记录
+    </div>
+    <div class="menu-item" onclick="switchTab('conversations')" data-tab="conversations">
+      <span class="emoji">💬</span> 对话管理
+    </div>
+    <div class="menu-item" onclick="switchTab('knowledge')" data-tab="knowledge">
+      <span class="emoji">📚</span> 知识库
+    </div>
+    <div class="menu-item" onclick="switchTab('settings')" data-tab="settings">
+      <span class="emoji">⚙️</span> 系统设置
+    </div>
+  </div>
+  <div class="footer">
+    影月影视 AI智能客服<br>
+    管理后台 v2.0
+  </div>
 </div>
 
+<!-- 主内容区 -->
 <div class="main">
 
-<div id="tab-dashboard">
-  <div class="header"><h1>数据概览</h1></div>
+<!-- Toast 提示 -->
+<div class="toast toast-success" id="toast-success"></div>
+<div class="toast toast-error" id="toast-error"></div>
+
+<!-- ==================== 数据概览 ==================== -->
+<div id="tab-dashboard" class="tab-panel">
+  <div class="topbar">
+    <div>
+      <h1>数据概览</h1>
+      <div class="subtitle">实时监控客服运行状态</div>
+    </div>
+    <button class="refresh-btn" onclick="refreshAll()">🔄 刷新数据</button>
+  </div>
+
   <div class="stats">
-    <div class="stat-card"><div class="label">今日对话</div><div class="value" id="stat-today">0</div></div>
-    <div class="stat-card"><div class="label">总会话数</div><div class="value" id="stat-total">0</div></div>
-    <div class="stat-card"><div class="label">消息总数</div><div class="value" id="stat-messages">0</div></div>
-    <div class="stat-card"><div class="label">知识库条目</div><div class="value" id="stat-kb">6</div></div>
+    <div class="stat-card">
+      <div class="label">📅 今日对话</div>
+      <div class="value" id="stat-today">0</div>
+      <div class="change" id="stat-today-change">较昨日 --</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">💬 总会话数</div>
+      <div class="value" id="stat-total">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">📨 消息总数</div>
+      <div class="value" id="stat-messages">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">📚 知识库条目</div>
+      <div class="value" id="stat-kb">0</div>
+    </div>
   </div>
-  <div class="card"><h2>最近对话</h2><div id="recent-conversations"></div></div>
-</div>
 
-<div id="tab-conversations" style="display:none">
-  <div class="header"><h1>聊天记录</h1></div>
+  <!-- 趋势图 -->
   <div class="card">
-    <table><thead><tr><th>时间</th><th>访客ID</th><th>消息数</th><th>最后消息</th><th>操作</th></tr></thead>
-    <tbody id="conversations-list"></tbody></table>
+    <div class="card-header">
+      <h2>📈 近7日对话趋势</h2>
+    </div>
+    <div class="chart-container" id="trend-chart">
+      <div class="chart-placeholder" id="chart-bars"></div>
+    </div>
   </div>
-</div>
 
-<div id="tab-knowledge" style="display:none">
-  <div class="header"><h1>知识库管理</h1></div>
-  <div class="success-msg" id="kb-success">操作成功！</div>
-  <div class="tab-bar">
-    <button class="tab active" onclick="switchKbTab('list')">知识库列表</button>
-    <button class="tab" onclick="switchKbTab('add')">+ 新增问答</button>
+  <!-- 最近对话 -->
+  <div class="card">
+    <div class="card-header">
+      <h2>🕐 最近对话</h2>
+      <button class="btn btn-secondary btn-sm" onclick="switchTab('conversations')">查看全部 →</button>
+    </div>
+    <div id="recent-conversations"></div>
   </div>
-  <div id="kb-list-section">
-    <div class="card"><table><thead><tr><th>分类</th><th>问题</th><th>答案预览</th><th>操作</th></tr></thead>
-    <tbody id="kb-list"></tbody></table></div>
-  </div>
-  <div id="kb-add-section" style="display:none">
-    <div class="card">
-      <h2>新增知识库问答</h2>
-      <div class="kb-form">
-        <div class="form-row">
-          <div><label>分类</label><select id="kb-category"><option value="1">产品报价</option><option value="2">业务流程</option><option value="3">常见问题</option><option value="4">售后服务</option></select></div>
-          <div><label>关键词</label><input type="text" id="kb-keywords" placeholder="价格,多少钱,费用"></div>
-        </div>
-        <label>问题</label><input type="text" id="kb-question" placeholder="客户可能会问什么问题？">
-        <label>答案</label><textarea id="kb-answer" placeholder="输入AI应该回复的内容..."></textarea>
-        <div><button class="btn btn-primary" onclick="addKnowledge()">保存</button>
-        <button class="btn" onclick="switchKbTab('list')" style="background:#f3f4f6;color:#666;margin-left:10px;">取消</button></div>
-      </div>
+
+  <!-- 快捷入口 -->
+  <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+    <div class="card" style="cursor:pointer;" onclick="switchTab('knowledge')">
+      <div style="font-size:28px;margin-bottom:10px;">📚</div>
+      <h3 style="font-size:14px;margin-bottom:6px;">知识库管理</h3>
+      <p style="font-size:12px;color:#94a3b8;">管理AI训练话术和问答内容</p>
+    </div>
+    <div class="card" style="cursor:pointer;" onclick="switchTab('visitors')">
+      <div style="font-size:28px;margin-bottom:10px;">👥</div>
+      <h3 style="font-size:14px;margin-bottom:6px;">访客分析</h3>
+      <p style="font-size:12px;color:#94a3b8;">查看访客记录和对话详情</p>
+    </div>
+    <div class="card" style="cursor:pointer;" onclick="switchTab('settings')">
+      <div style="font-size:28px;margin-bottom:10px;">⚙️</div>
+      <h3 style="font-size:14px;margin-bottom:6px;">系统设置</h3>
+      <p style="font-size:12px;color:#94a3b8;">配置通知、AI策略和嵌入代码</p>
     </div>
   </div>
 </div>
 
-<div id="tab-settings" style="display:none">
-  <div class="header"><h1>系统设置</h1></div>
-  <div class="card">
-    <div style="font-size:18px;margin-bottom:15px;color:#1e293b;">嵌入代码</div>
-    <p style="margin-bottom:15px;color:#666;font-size:14px;">将以下代码复制到企业官网HTML的 &lt;/body&gt; 标签之前：</p>
-    <textarea id="embed-code" readonly></textarea>
-    <div style="margin-top:15px;"><button class="btn btn-primary" onclick="copyEmbedCode()">复制代码</button></div>
+<!-- ==================== 访客记录 ==================== -->
+<div id="tab-visitors" class="tab-panel" style="display:none">
+  <div class="topbar">
+    <div>
+      <h1>访客记录</h1>
+      <div class="subtitle">查看所有访客信息和对话历史</div>
+    </div>
   </div>
-  <div class="card" style="margin-top:20px;">
-    <div style="font-size:18px;margin-bottom:15px;color:#1e293b;">数据库连接信息</div>
-    <p style="color:#666;font-size:14px;margin-bottom:10px;">✅ TiDB Cloud 数据库已连接！数据永久保存。</p>
-    <div class="db-info">
+
+  <div class="card">
+    <div class="filter-bar">
+      <input type="text" id="visitor-search" placeholder="🔍 搜索访客ID或关键词..." oninput="renderVisitors()">
+      <select id="visitor-filter-date" onchange="renderVisitors()">
+        <option value="all">全部时间</option>
+        <option value="today">今天</option>
+        <option value="yesterday">昨天</option>
+        <option value="7days">近7天</option>
+        <option value="30days">近30天</option>
+      </select>
+    </div>
+    <div class="table-wrap">
       <table>
-        <tr><td style="width:100px;color:#888;">Host</td><td>gateway01.ap-southeast-1.prod.aws.tidbcloud.com</td></tr>
-        <tr><td style="color:#888;">Port</td><td>4000</td></tr>
-        <tr><td style="color:#888;">Database</td><td>ai_chat</td></tr>
-        <tr><td style="color:#888;">User</td><td>367LphjRK4LxS6S.root</td></tr>
-        <tr><td style="color:#888;">Status</td><td style="color:#22c55e;">🟢 已连接</td></tr>
+        <thead>
+          <tr>
+            <th>访客ID</th>
+            <th>首次访问</th>
+            <th>最后活跃</th>
+            <th>消息数</th>
+            <th>最后消息</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="visitors-list"></tbody>
+      </table>
+    </div>
+    <div class="pagination" id="visitors-pagination"></div>
+  </div>
+</div>
+
+<!-- ==================== 对话管理 ==================== -->
+<div id="tab-conversations" class="tab-panel" style="display:none">
+  <div class="topbar">
+    <div>
+      <h1>对话管理</h1>
+      <div class="subtitle">查看和管理所有对话记录</div>
+    </div>
+    <button class="btn btn-danger btn-sm" onclick="clearAllConversations()">🗑️ 清空记录</button>
+  </div>
+
+  <div class="card">
+    <div class="filter-bar">
+      <input type="text" id="conv-search" placeholder="🔍 搜索对话内容..." oninput="renderConversations()">
+      <select id="conv-filter-date" onchange="renderConversations()">
+        <option value="all">全部时间</option>
+        <option value="today">今天</option>
+        <option value="yesterday">昨天</option>
+        <option value="7days">近7天</option>
+      </select>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>时间</th>
+            <th>访客ID</th>
+            <th>消息数</th>
+            <th>对话预览</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="conversations-list"></tbody>
+      </table>
+    </div>
+    <div class="pagination" id="conv-pagination"></div>
+  </div>
+</div>
+
+<!-- ==================== 知识库 ==================== -->
+<div id="tab-knowledge" class="tab-panel" style="display:none">
+  <div class="topbar">
+    <div>
+      <h1>知识库管理</h1>
+      <div class="subtitle">管理AI客服的训练话术和问答内容</div>
+    </div>
+    <button class="btn btn-primary" onclick="openKbModal()">+ 新增问答</button>
+  </div>
+
+  <div class="category-filters" id="category-filters"></div>
+
+  <div class="card">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:100px">分类</th>
+            <th style="width:200px">问题</th>
+            <th>答案</th>
+            <th style="width:100px">操作</th>
+          </tr>
+        </thead>
+        <tbody id="kb-list"></tbody>
       </table>
     </div>
   </div>
 </div>
 
+<!-- ==================== 系统设置 ==================== -->
+<div id="tab-settings" class="tab-panel" style="display:none">
+  <div class="topbar">
+    <div>
+      <h1>系统设置</h1>
+      <div class="subtitle">配置通知方式、AI策略和嵌入代码</div>
+    </div>
+  </div>
+
+  <!-- 通知设置 -->
+  <div class="card">
+    <div class="card-header"><h2>🔔 通知设置</h2></div>
+    <div class="setting-item">
+      <div class="switch-wrap">
+        <label class="switch">
+          <input type="checkbox" id="notify-email" onchange="saveNotifySettings()">
+          <span class="slider"></span>
+        </label>
+        <span class="switch-label"><strong>邮件通知</strong> - 收到客户消息时发送邮件到管理员邮箱</span>
+      </div>
+      <p style="margin-left:56px;color:#94a3b8;font-size:13px;">当前收件人：908159172@qq.com</p>
+    </div>
+    <div class="setting-item">
+      <div class="switch-wrap">
+        <label class="switch">
+          <input type="checkbox" id="notify-feishu" onchange="saveNotifySettings()">
+          <span class="slider"></span>
+        </label>
+        <span class="switch-label"><strong>飞书通知</strong> - 收到客户消息时推送到飞书群</span>
+      </div>
+    </div>
+    <div class="setting-item">
+      <div class="switch-wrap">
+        <label class="switch">
+          <input type="checkbox" id="notify-first-only" onchange="saveNotifySettings()" checked>
+          <span class="slider"></span>
+        </label>
+        <span class="switch-label"><strong>仅首次通知</strong> - 每个访客只通知一次，避免重复打扰</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI策略设置 -->
+  <div class="card">
+    <div class="card-header"><h2>🤖 AI 策略设置</h2></div>
+    <div class="setting-item">
+      <h4>AI客服名称</h4>
+      <p>显示在聊天窗口顶部的名称</p>
+      <div class="form-row">
+        <input type="text" id="ai-name" value="在线客服小影" onchange="saveAISettings()">
+      </div>
+    </div>
+    <div class="setting-item">
+      <h4>开场欢迎语</h4>
+      <p>客户打开聊天窗口时自动发送的第一句话</p>
+      <textarea id="ai-welcome" onchange="saveAISettings()">您好！我是影月影视的小影~ 咱们专做企业宣传片、广告片、短视频等影视制作，您想拍什么？</textarea>
+    </div>
+    <div class="setting-item">
+      <h4>微信引导话术</h4>
+      <p>第3句后引导客户加微信的话术（{wx}会被替换为导演微信号）</p>
+      <textarea id="ai-wx-prompt" onchange="saveAISettings()">方便的话可以加导演微信{wx}，给您详细方案~</textarea>
+    </div>
+    <div class="setting-item">
+      <h4>导演微信号</h4>
+      <p>用于替换{wx}变量的实际微信号</p>
+      <div class="form-row">
+        <div class="form-group" style="margin-bottom:0">
+          <input type="text" id="ai-wx-number" value="18621893879" onchange="saveAISettings()">
+        </div>
+      </div>
+    </div>
+    <div class="setting-item">
+      <h4>最大回复字数</h4>
+      <p>限制AI每次回复的最大字数，建议50字以内</p>
+      <div class="form-row">
+        <div class="form-group" style="margin-bottom:0">
+          <input type="number" id="ai-max-chars" value="50" min="20" max="200" onchange="saveAISettings()">
+        </div>
+      </div>
+    </div>
+    <div class="setting-item">
+      <h4>微信引导时机</h4>
+      <p>第几句回复后允许提微信（默认第3句）</p>
+      <div class="form-row">
+        <div class="form-group" style="margin-bottom:0">
+          <select id="ai-wx-turn" onchange="saveAISettings()">
+            <option value="2">第2句后</option>
+            <option value="3" selected>第3句后</option>
+            <option value="4">第4句后</option>
+            <option value="5">第5句后</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 嵌入代码 -->
+  <div class="card">
+    <div class="card-header"><h2>📎 嵌入代码</h2></div>
+    <p style="margin-bottom:12px;color:#64748b;font-size:14px;">将以下代码复制到企业官网HTML的 &lt;/body&gt; 标签之前：</p>
+    <textarea class="code-block" id="embed-code" readonly></textarea>
+    <div style="margin-top:12px;">
+      <button class="btn btn-primary" onclick="copyEmbedCode()">📋 复制代码</button>
+    </div>
+  </div>
+
+  <!-- 数据管理 -->
+  <div class="card">
+    <div class="card-header"><h2>🗄️ 数据管理</h2></div>
+    <div class="setting-item">
+      <h4>导出数据</h4>
+      <p>将所有对话记录和知识库导出为JSON文件</p>
+      <button class="btn btn-secondary" onclick="exportData()">📥 导出全部数据</button>
+    </div>
+    <div class="setting-item">
+      <h4>导入数据</h4>
+      <p>从JSON文件导入对话记录和知识库</p>
+      <input type="file" id="import-file" accept=".json" onchange="importData(this)" style="margin-top:8px;">
+    </div>
+    <div class="setting-item">
+      <h4 style="color:#ef4444;">危险操作</h4>
+      <p style="color:#94a3b8;">清空所有本地存储的数据，此操作不可恢复</p>
+      <button class="btn btn-danger" onclick="clearAllData()" style="margin-top:8px;">⚠️ 清空所有数据</button>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- ==================== 对话详情模态框 ==================== -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h3>💬 对话详情</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal()">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 知识库编辑模态框 ==================== -->
+<div class="modal-overlay" id="kb-modal-overlay" onclick="closeKbModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h3 id="kb-modal-title">📚 新增知识库问答</h3>
+      <button class="modal-close" onclick="closeKbModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="kb-edit-id">
+      <div class="form-row">
+        <div class="form-group">
+          <label>分类 *</label>
+          <select id="kb-edit-category">
+            <option value="产品报价">产品报价</option>
+            <option value="业务流程">业务流程</option>
+            <option value="常见问题">常见问题</option>
+            <option value="售后服务">售后服务</option>
+            <option value="公司介绍">公司介绍</option>
+            <option value="技术能力">技术能力</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>关键词（逗号分隔）</label>
+          <input type="text" id="kb-edit-keywords" placeholder="价格,多少钱,费用">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>问题 *</label>
+        <input type="text" id="kb-edit-question" placeholder="客户可能会问什么问题？">
+      </div>
+      <div class="form-group">
+        <label>答案 *</label>
+        <textarea id="kb-edit-answer" placeholder="输入AI应该回复的内容..." style="min-height:120px;"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeKbModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveKnowledgeItem()">保存</button>
+    </div>
+  </div>
 </div>
 
 <script>
-function getConversations() { return JSON.parse(localStorage.getItem('chat_conversations') || '[]'); }
-function saveConversations(list) { localStorage.setItem('chat_conversations', JSON.stringify(list)); }
-function getKnowledge() { return JSON.parse(localStorage.getItem('chat_knowledge') || 'null') || getDefaultKnowledge(); }
-function saveKnowledge(list) { localStorage.setItem('chat_knowledge', JSON.stringify(list)); }
-function getDefaultKnowledge() { return [
-  {id:1,category:'产品报价',question:'你们的产品怎么收费？',answer:'基础版免费（100次/月）、专业版299元/月（无限对话）、企业版999元/月（全功能）。所有版本支持14天免费试用。',keywords:'价格,收费,多少钱'},
-  {id:2,category:'业务流程',question:'合作流程是怎样的？',answer:'1.需求沟通→2.方案定制→3.签约付款→4.部署上线（3个工作日）→5.培训交付→6.持续服务。整个流程约1-2周。',keywords:'流程,合作,签约'},
-  {id:3,category:'产品报价',question:'有免费试用吗？',answer:'有的！14天全功能免费试用，可体验所有专业版功能。',keywords:'免费,试用'},
-  {id:4,category:'常见问题',question:'你们公司做什么的？',answer:'专注AI智能客服解决方案，基于Kimi大模型，5分钟快速部署，支持全渠道接入。服务超500家企业。',keywords:'公司,业务'},
-  {id:5,category:'售后服务',question:'售后服务怎么样？',answer:'7×24小时服务，电话400-XXX-XXXX，邮件support@example.com。紧急问题15分钟响应。',keywords:'售后,服务'},
-  {id:6,category:'常见问题',question:'怎么联系你们？',answer:'在线客服（本窗口）、电话400-XXX-XXXX（工作日9-18点）、邮箱support@example.com。',keywords:'联系,电话'}
-]; }
-
-function showSuccess(msg) {
-  const el = document.getElementById('kb-success');
-  el.textContent = msg;
-  el.style.display = 'block';
-  setTimeout(() => el.style.display = 'none', 3000);
+// ==================== 数据管理 ====================
+function getConversations() {
+  return JSON.parse(localStorage.getItem('chat_conversations') || '[]');
+}
+function saveConversations(list) {
+  localStorage.setItem('chat_conversations', JSON.stringify(list));
+}
+function getKnowledge() {
+  return JSON.parse(localStorage.getItem('chat_knowledge') || 'null') || getDefaultKnowledge();
+}
+function saveKnowledge(list) {
+  localStorage.setItem('chat_knowledge', JSON.stringify(list));
+}
+function getSettings() {
+  return JSON.parse(localStorage.getItem('chat_settings') || '{}');
+}
+function saveSettings(s) {
+  localStorage.setItem('chat_settings', JSON.stringify(s));
+}
+function getDefaultKnowledge() {
+  return [
+    {id:1,category:'公司介绍',question:'你们公司是做什么的？',answer:'影月影视是一家专业的影视制作公司，成立于2012年，专注企业宣传片、广告片、短视频、产品视频、活动记录等影视制作13年，服务过500多家上市公司和行业龙头企业。',keywords:'公司,业务,做什么'},
+    {id:2,category:'产品报价',question:'拍宣传片多少钱？',answer:'所有项目都是根据需求定制的呢。价格主要看拍摄天数、后期复杂度和是否需要动画特效，一般区间5万-50万。方便加导演微信18621893879，给您详细方案~',keywords:'价格,多少钱,费用,报价'},
+    {id:3,category:'业务流程',question:'合作流程是怎样的？',answer:'流程很简单：1.需求沟通→2.方案定制→3.签约付款→4.拍摄制作→5.后期交付。整个周期一般2-4周，具体看项目复杂度。',keywords:'流程,合作,签约,步骤'},
+    {id:4,category:'公司介绍',question:'你们有什么优势？',answer:'我们有3大核心优势：①13年行业经验，服务过华为、腾讯、比亚迪等500多家上市公司；②资深导演团队+电影级设备；③从策划到后期一站式服务，省心省力。',keywords:'优势,为什么选你们,特色'},
+    {id:5,category:'产品报价',question:'有免费方案吗？',answer:'有的！前期咨询和方案策划完全免费。我们可以先了解您的需求，免费出一份初步方案和预算。',keywords:'免费,方案'},
+    {id:6,category:'常见问题',question:'拍摄需要多久？',answer:'一般企业宣传片拍摄2-3天，后期制作1-2周。具体时间看项目需求，简单的短视频3-5天就能交付。',keywords:'时间,多久,周期'},
+    {id:7,category:'售后服务',question:'后期修改怎么收费？',answer:'我们包含3次免费修改。超出次数后根据修改量收费，小调整一般不收费。交付后也有售后保障。',keywords:'售后,修改,服务'},
+    {id:8,category:'技术能力',question:'能做动画特效吗？',answer:'当然可以！我们有专业的三维动画和MG动画团队，能做产品演示动画、建筑漫游、特效包装等。',keywords:'动画,特效,三维,MG'},
+  ];
 }
 
+// ==================== 工具函数 ====================
+function showToast(msg, type) {
+  const el = document.getElementById(type === 'error' ? 'toast-error' : 'toast-success');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+function formatDate(ts) {
+  if (!ts) return '-';
+  const d = new Date(ts);
+  const now = new Date();
+  const isToday = d.toDateString() === now.toDateString();
+  const isYesterday = d.toDateString() === new Date(now - 86400000).toDateString();
+  const time = d.toLocaleTimeString('zh-CN', {hour:'2-digit', minute:'2-digit'});
+  if (isToday) return '今天 ' + time;
+  if (isYesterday) return '昨天 ' + time;
+  return d.toLocaleString('zh-CN');
+}
+
+function formatDateShort(ts) {
+  if (!ts) return '-';
+  const d = new Date(ts);
+  return d.toLocaleDateString('zh-CN', {month:'short', day:'numeric'});
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// ==================== 分页 ====================
+let visitorPage = 1, convPage = 1;
+const PAGE_SIZE = 10;
+
+function renderPagination(containerId, currentPage, totalItems, callback) {
+  const totalPages = Math.ceil(totalItems / PAGE_SIZE);
+  if (totalPages <= 1) { document.getElementById(containerId).innerHTML = ''; return; }
+  let html = '';
+  html += `<button class="page-btn" ${currentPage===1?'disabled':''} onclick="${callback}(${currentPage-1})">上一页</button>`;
+  for (let i = 1; i <= totalPages; i++) {
+    if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+      html += `<button class="page-btn ${i===currentPage?'active':''}" onclick="${callback}(${i})">${i}</button>`;
+    } else if (i === currentPage - 2 || i === currentPage + 2) {
+      html += `<span style="color:#94a3b8;padding:6px;">...</span>`;
+    }
+  }
+  html += `<button class="page-btn" ${currentPage===totalPages?'disabled':''} onclick="${callback}(${currentPage+1})">下一页</button>`;
+  document.getElementById(containerId).innerHTML = html;
+}
+
+// ==================== 标签切换 ====================
 function switchTab(tab) {
   document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
-  event.target.classList.add('active');
-  ['dashboard','conversations','knowledge','settings'].forEach(t => {
-    document.getElementById('tab-'+t).style.display = t===tab?'block':'none';
-  });
-  if(tab==='dashboard') renderDashboard();
-  if(tab==='conversations') renderConversations();
-  if(tab==='knowledge') renderKnowledge();
-  if(tab==='settings') renderSettings();
-}
-function switchKbTab(tab) {
-  document.getElementById('kb-list-section').style.display = tab==='list'?'block':'none';
-  document.getElementById('kb-add-section').style.display = tab==='add'?'block':'none';
-  document.querySelectorAll('#tab-knowledge .tab').forEach((el,i) => {
-    el.classList.toggle('active', (tab==='list'&&i===0)||(tab==='add'&&i===1));
-  });
+  document.querySelectorAll('.tab-panel').forEach(el => el.style.display = 'none');
+  const menuItem = document.querySelector(`.menu-item[data-tab="${tab}"]`);
+  if (menuItem) menuItem.classList.add('active');
+  const panel = document.getElementById('tab-' + tab);
+  if (panel) panel.style.display = 'block';
+
+  if (tab === 'dashboard') renderDashboard();
+  if (tab === 'visitors') renderVisitors();
+  if (tab === 'conversations') renderConversations();
+  if (tab === 'knowledge') renderKnowledge();
+  if (tab === 'settings') renderSettings();
 }
 
+// ==================== 数据概览 ====================
 function renderDashboard() {
   const convs = getConversations();
   const today = new Date().toDateString();
-  const todayConvs = convs.filter(c => new Date(c.time).toDateString()===today);
+  const yesterday = new Date(Date.now() - 86400000).toDateString();
+  const todayConvs = convs.filter(c => new Date(c.time).toDateString() === today);
+  const yestConvs = convs.filter(c => new Date(c.time).toDateString() === yesterday);
   let totalMsgs = 0;
-  convs.forEach(c => totalMsgs += (c.messages?c.messages.length:0));
+  convs.forEach(c => totalMsgs += (c.messages ? c.messages.length : 0));
+
   document.getElementById('stat-today').textContent = todayConvs.length;
   document.getElementById('stat-total').textContent = convs.length;
   document.getElementById('stat-messages').textContent = totalMsgs;
   document.getElementById('stat-kb').textContent = getKnowledge().length;
+
+  const change = todayConvs.length - yestConvs.length;
+  const changeEl = document.getElementById('stat-today-change');
+  if (yestConvs.length === 0) {
+    changeEl.textContent = change > 0 ? `较昨日 +${change}` : '较昨日 --';
+    changeEl.className = 'change';
+  } else {
+    const pct = Math.round((change / yestConvs.length) * 100);
+    changeEl.textContent = (change >= 0 ? '+' : '') + change + ' (' + (pct >= 0 ? '+' : '') + pct + '%)';
+    changeEl.className = 'change' + (change < 0 ? ' negative' : '');
+  }
+
+  // 趋势图
+  renderTrendChart(convs);
+
+  // 最近对话
   const recent = convs.slice(-5).reverse();
   const container = document.getElementById('recent-conversations');
-  if(!recent.length) { container.innerHTML = '<div class="empty-state">暂无对话记录</div>'; return; }
-  container.innerHTML = '<table><thead><tr><th>时间</th><th>访客</th><th>消息</th><th>预览</th></tr></thead><tbody>' + recent.map(c => {
-    const lastMsg = c.messages&&c.messages.length ? c.messages[c.messages.length-1].content.substring(0,30)+'...' : '-';
-    return `<tr><td>${new Date(c.time).toLocaleString()}</td><td>${c.visitorId.substring(0,8)}</td><td>${c.messages?c.messages.length:0}</td><td class="msg-preview">${lastMsg}</td></tr>`;
-  }).join('') + '</tbody></table>';
+  if (!recent.length) {
+    container.innerHTML = '<div class="empty-state"><div class="icon">💬</div><p>暂无对话记录</p></div>';
+    return;
+  }
+  let html = '<table><thead><tr><th>时间</th><th>访客ID</th><th>消息</th><th>最后消息</th></tr></thead><tbody>';
+  recent.forEach(c => {
+    const lastMsg = c.messages && c.messages.length ? c.messages[c.messages.length-1].content.substring(0,40) + '...' : '-';
+    html += `<tr><td>${formatDate(c.time)}</td><td><span class="visitor-id">${c.visitorId.substring(0,10)}</span></td><td>${c.messages ? c.messages.length : 0}</td><td class="msg-preview">${escapeHtml(lastMsg)}</td></tr>`;
+  });
+  html += '</tbody></table>';
+  container.innerHTML = html;
 }
 
-function renderConversations() {
+function renderTrendChart(convs) {
+  const days = [];
+  const counts = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(Date.now() - i * 86400000);
+    days.push(d.toLocaleDateString('zh-CN', {month:'short', day:'numeric'}));
+    const dayStr = d.toDateString();
+    counts.push(convs.filter(c => new Date(c.time).toDateString() === dayStr).length);
+  }
+  const maxCount = Math.max(...counts, 1);
+  let html = '';
+  counts.forEach((count, i) => {
+    const height = Math.max((count / maxCount) * 140, 4);
+    html += `<div class="chart-bar" style="height:${height}px" title="${days[i]}: ${count}次对话"><div class="chart-bar-label">${days[i].replace('月','/').replace('日','')}</div></div>`;
+  });
+  document.getElementById('chart-bars').innerHTML = html;
+}
+
+// ==================== 访客记录 ====================
+function renderVisitors(page) {
+  if (page) visitorPage = page;
+  const convs = getConversations();
+  const search = document.getElementById('visitor-search').value.toLowerCase();
+  const dateFilter = document.getElementById('visitor-filter-date').value;
+
+  // 按访客ID聚合
+  const visitorMap = {};
+  convs.forEach(c => {
+    if (!visitorMap[c.visitorId]) {
+      visitorMap[c.visitorId] = { visitorId: c.visitorId, firstVisit: c.time, lastActive: c.time, messages: 0, lastMsg: '' };
+    }
+    const v = visitorMap[c.visitorId];
+    if (c.time < v.firstVisit) v.firstVisit = c.time;
+    if (c.time > v.lastActive) v.lastActive = c.time;
+    v.messages += (c.messages ? c.messages.length : 0);
+    if (c.messages && c.messages.length) {
+      const last = c.messages[c.messages.length - 1];
+      v.lastMsg = last.content;
+    }
+  });
+
+  let visitors = Object.values(visitorMap).sort((a, b) => b.lastActive - a.lastActive);
+
+  // 筛选
+  if (search) {
+    visitors = visitors.filter(v => v.visitorId.toLowerCase().includes(search) || v.lastMsg.toLowerCase().includes(search));
+  }
+  if (dateFilter !== 'all') {
+    const now = Date.now();
+    const ranges = { today: 0, yesterday: 1, '7days': 7, '30days': 30 };
+    const days = ranges[dateFilter] || 0;
+    if (dateFilter === 'yesterday') {
+      const yest = new Date(Date.now() - 86400000).toDateString();
+      visitors = visitors.filter(v => new Date(v.lastActive).toDateString() === yest);
+    } else {
+      visitors = visitors.filter(v => now - v.lastActive < days * 86400000);
+    }
+  }
+
+  const tbody = document.getElementById('visitors-list');
+  if (!visitors.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state" style="text-align:center;padding:40px;"><div class="icon">👥</div><p>暂无访客记录</p></td></tr>';
+    document.getElementById('visitors-pagination').innerHTML = '';
+    return;
+  }
+
+  // 分页
+  const totalItems = visitors.length;
+  const start = (visitorPage - 1) * PAGE_SIZE;
+  const pageItems = visitors.slice(start, start + PAGE_SIZE);
+
+  tbody.innerHTML = pageItems.map(v =>
+    `<tr>
+      <td><span class="visitor-id">${v.visitorId.substring(0,12)}</span></td>
+      <td>${formatDate(v.firstVisit)}</td>
+      <td>${formatDate(v.lastActive)}</td>
+      <td><span class="badge badge-blue">${v.messages}</span></td>
+      <td class="msg-preview">${escapeHtml(v.lastMsg.substring(0,40))}${v.lastMsg.length>40?'...':''}</td>
+      <td>
+        <button class="btn btn-primary btn-sm" onclick="viewVisitorConv('${v.visitorId}')">查看对话</button>
+      </td>
+    </tr>`
+  ).join('');
+
+  renderPagination('visitors-pagination', visitorPage, totalItems, 'renderVisitors');
+}
+
+function viewVisitorConv(visitorId) {
+  const convs = getConversations().filter(c => c.visitorId === visitorId);
+  let allMessages = [];
+  convs.forEach(c => {
+    if (c.messages) {
+      c.messages.forEach(m => allMessages.push({...m, convTime: c.time}));
+    }
+  });
+  allMessages.sort((a, b) => (a.time || 0) - (b.time || 0));
+
+  let html = `<div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid #f1f5f9;">
+    <strong>访客ID：</strong><span class="visitor-id">${visitorId}</span>
+    <span style="margin-left:16px;color:#94a3b8;font-size:13px;">共 ${allMessages.length} 条消息，${convs.length} 次会话</span>
+  </div>`;
+
+  if (!allMessages.length) {
+    html += '<div class="empty-state"><p>暂无消息</p></div>';
+  } else {
+    allMessages.forEach(m => {
+      const isUser = m.role === 'user';
+      html += `<div class="chat-bubble ${isUser?'user':'ai'}">
+        ${isUser?'':'<div class="avatar">AI</div>'}
+        <div>
+          <div class="bubble">${escapeHtml(m.content)}</div>
+          <div class="meta">${formatDate(m.time || m.convTime)}</div>
+        </div>
+        ${isUser?'<div class="avatar">客</div>':''}
+      </div>`;
+    });
+  }
+
+  document.getElementById('modal-body').innerHTML = html;
+  document.getElementById('modal-overlay').classList.add('show');
+}
+
+// ==================== 对话管理 ====================
+function renderConversations(page) {
+  if (page) convPage = page;
   const convs = getConversations().reverse();
+  const search = document.getElementById('conv-search').value.toLowerCase();
+  const dateFilter = document.getElementById('conv-filter-date').value;
+
+  let filtered = [...convs];
+
+  if (search) {
+    filtered = filtered.filter(c => {
+      if (c.visitorId.toLowerCase().includes(search)) return true;
+      if (c.messages) return c.messages.some(m => m.content.toLowerCase().includes(search));
+      return false;
+    });
+  }
+
+  if (dateFilter !== 'all') {
+    const now = Date.now();
+    const ranges = { today: 0, yesterday: 1, '7days': 7 };
+    if (dateFilter === 'yesterday') {
+      const yest = new Date(Date.now() - 86400000).toDateString();
+      filtered = filtered.filter(c => new Date(c.time).toDateString() === yest);
+    } else if (dateFilter === 'today') {
+      const todayStr = new Date().toDateString();
+      filtered = filtered.filter(c => new Date(c.time).toDateString() === todayStr);
+    } else {
+      const days = ranges[dateFilter] || 7;
+      filtered = filtered.filter(c => now - c.time < days * 86400000);
+    }
+  }
+
   const tbody = document.getElementById('conversations-list');
-  if(!convs.length) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:#999;">暂无对话记录</td></tr>'; return; }
-  tbody.innerHTML = convs.map(c => {
-    const lastMsg = c.messages&&c.messages.length ? c.messages[c.messages.length-1].content.substring(0,40)+'...' : '-';
-    return `<tr><td>${new Date(c.time).toLocaleString()}</td><td><code>${c.visitorId}</code></td><td>${c.messages?c.messages.length:0}</td><td class="msg-preview">${lastMsg}</td><td><button class="btn" style="padding:4px 12px;font-size:12px;background:#eff6ff;color:#4f46e5;" onclick="viewConv('${c.id}')">查看</button></td></tr>`;
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-state" style="text-align:center;padding:40px;"><div class="icon">💬</div><p>暂无对话记录</p></td></tr>';
+    document.getElementById('conv-pagination').innerHTML = '';
+    return;
+  }
+
+  const totalItems = filtered.length;
+  const start = (convPage - 1) * PAGE_SIZE;
+  const pageItems = filtered.slice(start, start + PAGE_SIZE);
+
+  tbody.innerHTML = pageItems.map(c => {
+    const lastMsg = c.messages && c.messages.length ? c.messages[c.messages.length-1].content.substring(0,45) + '...' : '-';
+    const msgCount = c.messages ? c.messages.length : 0;
+    return `<tr>
+      <td>${formatDate(c.time)}</td>
+      <td><span class="visitor-id">${c.visitorId.substring(0,10)}</span></td>
+      <td><span class="badge badge-green">${msgCount}</span></td>
+      <td class="msg-preview">${escapeHtml(lastMsg)}</td>
+      <td>
+        <button class="btn btn-primary btn-sm" onclick="viewConvDetail('${c.id}')">查看</button>
+      </td>
+    </tr>`;
   }).join('');
+
+  renderPagination('conv-pagination', convPage, totalItems, 'renderConversations');
 }
-function viewConv(id) {
-  const conv = getConversations().find(c => c.id===id);
-  if(!conv) return;
-  const msgs = (conv.messages||[]).map(m => `<div style="margin-bottom:8px;padding:8px 12px;border-radius:8px;background:${m.role==='user'?'#4f46e5;color:#fff':'#f3f4f6'};word-break:break-all;font-size:14px;"><b>${m.role==='user'?'访客':'AI'}:</b> ${m.content}</div>`).join('');
-  const win = window.open('','_blank','width=500,height=600');
-  win.document.write(`<html><head><title>对话详情</title><style>body{font-family:sans-serif;padding:20px;}</style></head><body><h3>访客: ${conv.visitorId.substring(0,12)}</h3><p style="color:#666;font-size:13px;">${new Date(conv.time).toLocaleString()}</p><hr style="margin:15px 0;border:0;border-top:1px solid #eee;">${msgs}</body></html>`);
+
+function viewConvDetail(id) {
+  const convs = getConversations();
+  const conv = convs.find(c => c.id === id);
+  if (!conv) return;
+
+  let html = `<div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid #f1f5f9;">
+    <strong>访客ID：</strong><span class="visitor-id">${conv.visitorId.substring(0,12)}</span>
+    <span style="margin-left:16px;color:#94a3b8;font-size:13px;">${formatDate(conv.time)} · ${conv.messages ? conv.messages.length : 0} 条消息</span>
+  </div>`;
+
+  if (!conv.messages || !conv.messages.length) {
+    html += '<div class="empty-state"><p>暂无消息</p></div>';
+  } else {
+    conv.messages.forEach(m => {
+      const isUser = m.role === 'user';
+      html += `<div class="chat-bubble ${isUser?'user':'ai'}">
+        ${isUser?'':'<div class="avatar">AI</div>'}
+        <div>
+          <div class="bubble">${escapeHtml(m.content)}</div>
+          <div class="meta">${formatDate(m.time)}</div>
+        </div>
+        ${isUser?'<div class="avatar">客</div>':''}
+      </div>`;
+    });
+  }
+
+  document.getElementById('modal-body').innerHTML = html;
+  document.getElementById('modal-overlay').classList.add('show');
 }
+
+function clearAllConversations() {
+  if (!confirm('⚠️ 确定要清空所有对话记录吗？此操作不可恢复！')) return;
+  saveConversations([]);
+  renderConversations();
+  renderDashboard();
+  showToast('已清空所有对话记录', 'success');
+}
+
+// ==================== 知识库 ====================
+let kbFilterCategory = '全部';
 
 function renderKnowledge() {
   const kb = getKnowledge();
+
+  // 渲染分类筛选
+  const categories = ['全部', ...new Set(kb.map(k => k.category))];
+  const filterContainer = document.getElementById('category-filters');
+  filterContainer.innerHTML = categories.map(cat =>
+    `<button class="category-filter ${cat === kbFilterCategory ? 'active' : ''}" onclick="filterKbCategory('${cat}')">${cat}</button>`
+  ).join('');
+
+  // 渲染列表
   const tbody = document.getElementById('kb-list');
-  if(!kb.length) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:40px;color:#999;">暂无知识库数据</td></tr>'; return; }
-  tbody.innerHTML = kb.map(item => `<tr><td><span class="badge badge-blue">${item.category}</span></td><td>${item.question}</td><td class="msg-preview">${item.answer}</td><td><button class="btn btn-danger" style="padding:4px 12px;font-size:12px;" onclick="delKnowledge(${item.id})">删除</button></td></tr>`).join('');
+  let filtered = kb;
+  if (kbFilterCategory !== '全部') {
+    filtered = kb.filter(k => k.category === kbFilterCategory);
+  }
+
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="4" class="empty-state" style="text-align:center;padding:40px;"><div class="icon">📚</div><p>暂无知识库数据</p></td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(item =>
+    `<tr>
+      <td><span class="badge badge-orange">${item.category}</span></td>
+      <td style="font-weight:500;">${escapeHtml(item.question)}</td>
+      <td class="msg-preview" style="max-width:400px;">${escapeHtml(item.answer)}</td>
+      <td>
+        <button class="btn btn-secondary btn-sm" onclick="editKnowledge(${item.id})" style="margin-right:6px;">编辑</button>
+        <button class="btn btn-danger btn-sm" onclick="delKnowledge(${item.id})">删除</button>
+      </td>
+    </tr>`
+  ).join('');
 }
-function addKnowledge() {
-  const category = document.getElementById('kb-category');
-  const question = document.getElementById('kb-question').value.trim();
-  const answer = document.getElementById('kb-answer').value.trim();
-  if(!question||!answer) { alert('请填写问题和答案'); return; }
+
+function filterKbCategory(cat) {
+  kbFilterCategory = cat;
+  renderKnowledge();
+}
+
+function openKbModal(id) {
+  document.getElementById('kb-edit-id').value = id || '';
+  document.getElementById('kb-modal-title').textContent = id ? '📚 编辑知识库问答' : '📚 新增知识库问答';
+
+  if (id) {
+    const item = getKnowledge().find(k => k.id === id);
+    if (item) {
+      document.getElementById('kb-edit-category').value = item.category;
+      document.getElementById('kb-edit-keywords').value = item.keywords || '';
+      document.getElementById('kb-edit-question').value = item.question;
+      document.getElementById('kb-edit-answer').value = item.answer;
+    }
+  } else {
+    document.getElementById('kb-edit-category').selectedIndex = 0;
+    document.getElementById('kb-edit-keywords').value = '';
+    document.getElementById('kb-edit-question').value = '';
+    document.getElementById('kb-edit-answer').value = '';
+  }
+
+  document.getElementById('kb-modal-overlay').classList.add('show');
+}
+
+function closeKbModal() {
+  document.getElementById('kb-modal-overlay').classList.remove('show');
+}
+
+function editKnowledge(id) {
+  openKbModal(id);
+}
+
+function saveKnowledgeItem() {
+  const id = document.getElementById('kb-edit-id').value;
+  const category = document.getElementById('kb-edit-category').value;
+  const question = document.getElementById('kb-edit-question').value.trim();
+  const answer = document.getElementById('kb-edit-answer').value.trim();
+  const keywords = document.getElementById('kb-edit-keywords').value.trim();
+
+  if (!question || !answer) { showToast('请填写问题和答案', 'error'); return; }
+
   const kb = getKnowledge();
-  kb.push({id:kb.length?Math.max(...kb.map(k=>k.id))+1:1,category:category.options[category.selectedIndex].text,question,answer,keywords:document.getElementById('kb-keywords').value});
+  if (id) {
+    const idx = kb.findIndex(k => k.id == id);
+    if (idx >= 0) {
+      kb[idx] = { ...kb[idx], category, question, answer, keywords };
+    }
+  } else {
+    const newId = kb.length ? Math.max(...kb.map(k => k.id)) + 1 : 1;
+    kb.push({ id: newId, category, question, answer, keywords });
+  }
   saveKnowledge(kb);
-  document.getElementById('kb-question').value=''; document.getElementById('kb-answer').value=''; document.getElementById('kb-keywords').value='';
-  switchKbTab('list'); renderKnowledge(); showSuccess('添加成功！');
+  closeKbModal();
+  renderKnowledge();
+  showToast(id ? '修改成功！' : '添加成功！', 'success');
 }
+
 function delKnowledge(id) {
-  if(!confirm('确定删除？')) return;
-  saveKnowledge(getKnowledge().filter(k => k.id!==id));
-  renderKnowledge(); showSuccess('删除成功！');
+  if (!confirm('确定删除这条知识库问答吗？')) return;
+  const kb = getKnowledge().filter(k => k.id !== id);
+  saveKnowledge(kb);
+  renderKnowledge();
+  showToast('删除成功！', 'success');
 }
 
+// ==================== 系统设置 ====================
 function renderSettings() {
-  const url = location.href.replace('/admin.html','');
-  document.getElementById('embed-code').value = `<!-- AI智能客服 嵌入代码 -->\n<script src="${url}/chat-widget.js" async><\/script>`;
-}
-function copyEmbedCode() {
-  document.getElementById('embed-code').select();
-  document.execCommand('copy');
-  showSuccess('已复制到剪贴板！');
+  // 嵌入代码
+  const baseUrl = location.href.replace('/admin.html', '').replace('/admin', '');
+  document.getElementById('embed-code').value = `<!-- 影月影视 AI智能客服 嵌入代码 -->\n<script src="${baseUrl}/chat-widget.js" async><\/script>`;
+
+  // 加载设置
+  const settings = getSettings();
+  if (settings.notifyEmail !== undefined) document.getElementById('notify-email').checked = settings.notifyEmail;
+  if (settings.notifyFeishu !== undefined) document.getElementById('notify-feishu').checked = settings.notifyFeishu;
+  if (settings.notifyFirstOnly !== undefined) document.getElementById('notify-first-only').checked = settings.notifyFirstOnly;
+
+  if (settings.aiName) document.getElementById('ai-name').value = settings.aiName;
+  if (settings.welcomeMessage) document.getElementById('ai-welcome').value = settings.welcomeMessage;
+  if (settings.wxPrompt) document.getElementById('ai-wx-prompt').value = settings.wxPrompt;
+  if (settings.wxNumber) document.getElementById('ai-wx-number').value = settings.wxNumber;
+  if (settings.maxChars) document.getElementById('ai-max-chars').value = settings.maxChars;
+  if (settings.wxTurn) document.getElementById('ai-wx-turn').value = settings.wxTurn;
 }
 
+function saveNotifySettings() {
+  const settings = getSettings();
+  settings.notifyEmail = document.getElementById('notify-email').checked;
+  settings.notifyFeishu = document.getElementById('notify-feishu').checked;
+  settings.notifyFirstOnly = document.getElementById('notify-first-only').checked;
+  saveSettings(settings);
+  showToast('通知设置已保存', 'success');
+}
+
+function saveAISettings() {
+  const settings = getSettings();
+  settings.aiName = document.getElementById('ai-name').value;
+  settings.welcomeMessage = document.getElementById('ai-welcome').value;
+  settings.wxPrompt = document.getElementById('ai-wx-prompt').value;
+  settings.wxNumber = document.getElementById('ai-wx-number').value;
+  settings.maxChars = document.getElementById('ai-max-chars').value;
+  settings.wxTurn = document.getElementById('ai-wx-turn').value;
+  saveSettings(settings);
+  showToast('AI策略已保存', 'success');
+}
+
+function copyEmbedCode() {
+  const el = document.getElementById('embed-code');
+  el.select();
+  document.execCommand('copy');
+  showToast('已复制到剪贴板！', 'success');
+}
+
+// ==================== 数据导入导出 ====================
+function exportData() {
+  const data = {
+    conversations: getConversations(),
+    knowledge: getKnowledge(),
+    settings: getSettings(),
+    exportTime: new Date().toISOString(),
+    version: '2.0'
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `yingyue-chat-backup-${new Date().toLocaleDateString('zh-CN').replace(/\//g,'-')}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('数据导出成功！', 'success');
+}
+
+function importData(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data.conversations) saveConversations(data.conversations);
+      if (data.knowledge) saveKnowledge(data.knowledge);
+      if (data.settings) saveSettings(data.settings);
+      renderDashboard();
+      showToast('数据导入成功！', 'success');
+    } catch(err) {
+      showToast('导入失败：文件格式错误', 'error');
+    }
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
+
+function clearAllData() {
+  if (!confirm('⚠️ 警告：此操作将删除所有对话记录、知识库和设置，且不可恢复！\n\n确定要继续吗？')) return;
+  if (!confirm('再次确认：您真的要清空所有数据吗？')) return;
+  localStorage.removeItem('chat_conversations');
+  localStorage.removeItem('chat_knowledge');
+  localStorage.removeItem('chat_settings');
+  renderDashboard();
+  showToast('所有数据已清空', 'success');
+}
+
+// ==================== 模态框 ====================
+function closeModal(event) {
+  if (!event || event.target === document.getElementById('modal-overlay')) {
+    document.getElementById('modal-overlay').classList.remove('show');
+  }
+}
+
+function closeKbModal(event) {
+  if (!event || event.target === document.getElementById('kb-modal-overlay')) {
+    document.getElementById('kb-modal-overlay').classList.remove('show');
+  }
+}
+
+function refreshAll() {
+  renderDashboard();
+  showToast('数据已刷新', 'success');
+}
+
+// 键盘快捷键
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    document.getElementById('modal-overlay').classList.remove('show');
+    document.getElementById('kb-modal-overlay').classList.remove('show');
+  }
+});
+
+// 初始化
 renderDashboard();
 </script>
 </body>
