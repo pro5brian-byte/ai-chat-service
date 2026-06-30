@@ -165,7 +165,7 @@ input:disabled + .slider { background: #e0e0e0; cursor: not-allowed; }
     <div class="menu-item" onclick="switchTab('knowledge')" data-tab="knowledge"><span class="emoji">📚</span> 知识库</div>
     <div class="menu-item" onclick="switchTab('settings')" data-tab="settings"><span class="emoji">⚙️</span> 系统设置</div>
   </div>
-  <div class="footer">影月影视 AI智能客服<br>管理后台 v4.2</div>
+  <div class="footer">影月影视 AI智能客服<br>管理后台 v4.3</div>
 </div>
 
 <!-- 主内容区 -->
@@ -261,16 +261,31 @@ input:disabled + .slider { background: #e0e0e0; cursor: not-allowed; }
       <div class="notify-status" id="feishu-status">当前机器人：影月影视客服群</div>
     </div>
     <div class="setting-item">
-      <div class="notify-row disabled">
+      <div class="notify-row" id="email-switch-row">
         <label class="switch">
-          <input type="checkbox" id="notify-email" disabled>
+          <input type="checkbox" id="notify-email" onchange="saveEmailSettings()">
           <span class="slider"></span>
         </label>
         <div class="notify-info">
           <div class="title">邮件通知</div>
-          <div class="desc">收到客户消息时发送邮件提醒（暂未配置邮件服务）</div>
+          <div class="desc">客户发送第2条消息时，发送邮件提醒（需配置Resend API）</div>
         </div>
       </div>
+      <div id="email-config" style="margin-top:12px;padding:12px;background:#f8fafc;border-radius:8px;display:none;">
+        <div class="form-group" style="margin-bottom:10px;">
+          <label style="font-size:12px;color:#64748b;margin-bottom:4px;display:block;">Resend API Key</label>
+          <input type="text" id="email-api-key" placeholder="re_xxxxxxxx" onchange="saveEmailSettings()" style="width:100%;padding:8px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:13px;">
+        </div>
+        <div class="form-group" style="margin-bottom:10px;">
+          <label style="font-size:12px;color:#64748b;margin-bottom:4px;display:block;">发件人邮箱</label>
+          <input type="text" id="email-from" placeholder="onboarding@resend.dev" onchange="saveEmailSettings()" style="width:100%;padding:8px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:13px;">
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label style="font-size:12px;color:#64748b;margin-bottom:4px;display:block;">收件人邮箱</label>
+          <input type="text" id="email-to" placeholder="your@email.com" onchange="saveEmailSettings()" style="width:100%;padding:8px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:13px;">
+        </div>
+      </div>
+      <div class="notify-status" id="email-status" style="margin-top:8px;">未配置</div>
     </div>
   </div>
 
@@ -560,10 +575,18 @@ function renderSettings() {
   document.getElementById('ai-wx-number').value = settings.wxNumber || '18621893879';
   document.getElementById('ai-max-chars').value = settings.maxChars || '50';
   document.getElementById('ai-wx-turn').value = settings.wxTurn || '3';
-  document.getElementById('embed-code').value = '<!-- 影月影视 AI智能客服 v4.2 -->\n<script src="https://pro5brian-byte.github.io/ai-chat-service/chat-widget.js?v=32" async><\/script>\n<style>\n/* 按钮文字样式 */\n#ai-chat-btn { font-size: 0 !important; width: auto !important; padding: 12px 24px !important; border-radius: 24px !important; }\n#ai-chat-btn::before { content: "💬 在线客服"; font-size: 14px; }\n<\/style>';
+  document.getElementById('embed-code').value = '<!-- 影月影视 AI智能客服 v4.3 -->\n<script src="https://pro5brian-byte.github.io/ai-chat-service/chat-widget.js?v=33" async><\/script>\n<style>\n/* 按钮文字样式 */\n#ai-chat-btn { font-size: 0 !important; width: auto !important; padding: 12px 24px !important; border-radius: 24px !important; }\n#ai-chat-btn::before { content: "💬 在线客服"; font-size: 14px; }\n<\/style>';
 
   // 加载通知设置（默认开启）
   document.getElementById('notify-feishu').checked = settings.notifyFeishu !== false;
+  
+  // 加载邮件设置
+  document.getElementById('notify-email').checked = settings.notifyEmail === true;
+  document.getElementById('email-api-key').value = settings.resendApiKey || '';
+  document.getElementById('email-from').value = settings.emailFrom || '';
+  document.getElementById('email-to').value = settings.emailTo || '';
+  toggleEmailConfig(settings.notifyEmail === true);
+  updateEmailStatus();
 }
 function saveAISettings() {
   const settings = getSettings();
@@ -585,13 +608,50 @@ function saveNotifySettings() {
   showToast('通知设置已保存', 'success');
 }
 
+// 保存邮件设置
+function saveEmailSettings() {
+  const settings = getSettings();
+  settings.notifyEmail = document.getElementById('notify-email').checked;
+  settings.resendApiKey = document.getElementById('email-api-key').value.trim();
+  settings.emailFrom = document.getElementById('email-from').value.trim();
+  settings.emailTo = document.getElementById('email-to').value.trim();
+  saveSettings(settings);
+  toggleEmailConfig(settings.notifyEmail);
+  updateEmailStatus();
+  showToast('邮件设置已保存', 'success');
+}
+
+// 显示/隐藏邮件配置面板
+function toggleEmailConfig(show) {
+  document.getElementById('email-config').style.display = show ? 'block' : 'none';
+}
+
+// 更新邮件状态显示
+function updateEmailStatus() {
+  const settings = getSettings();
+  var status = '未配置';
+  var color = '#94a3b8';
+  if (settings.notifyEmail === true) {
+    if (settings.resendApiKey && settings.emailTo) {
+      status = '已开启 · 收件人：' + settings.emailTo;
+      color = '#52c41a';
+    } else {
+      status = '已开启但缺少配置（API Key或收件人邮箱）';
+      color = '#faad14';
+    }
+  }
+  var el = document.getElementById('email-status');
+  el.textContent = status;
+  el.style.color = color;
+}
+
 function copyEmbedCode() {
   document.getElementById('embed-code').select();
   document.execCommand('copy');
   showToast('已复制到剪贴板', 'success');
 }
 function exportData() {
-  const data = { knowledge: getKnowledge(), settings: getSettings(), exportTime: new Date().toISOString(), version: '4.2' };
+  const data = { knowledge: getKnowledge(), settings: getSettings(), exportTime: new Date().toISOString(), version: '4.3' };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
