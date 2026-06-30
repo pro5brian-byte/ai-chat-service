@@ -165,7 +165,7 @@ ${KNOWLEDGE_BASE}
     hasNotifiedFeishu = true;
 
     const visitorId = getVisitorId();
-    const summary = '【影月影视】新客户咨询\n\n💬 客户消息：' + content.substring(0, 200) + '\n\n👤 访客ID：' + visitorId + '\n🕐 时间：' + new Date().toLocaleString('zh-CN');
+    const summary = '【影月影视】新客户咨询\n\n💬 对话内容：\n' + content.substring(0, 300) + '\n\n👤 访客ID：' + visitorId + '\n🕐 时间：' + new Date().toLocaleString('zh-CN');
 
     try {
       fetch(FEISHU_WEBHOOK, {
@@ -312,7 +312,6 @@ ${KNOWLEDGE_BASE}
     // 🔥 发送飞书通知（客户发第2条消息时通知）
     const userMsgCount = chatHistory.filter(m => m.role === 'user').length;
     if (userMsgCount === 2) {
-      // 构建对话摘要
       const summary = chatHistory.slice(-4).map(m => {
         return m.role === 'user' ? '【客户】' + m.content : '【小影】' + m.content;
       }).join('\n');
@@ -340,7 +339,7 @@ ${KNOWLEDGE_BASE}
         addMessage('ai', reply);
         chatHistory.push({role:'assistant', content:reply});
         if (chatHistory.length > CONFIG.maxHistory) chatHistory = chatHistory.slice(-CONFIG.maxHistory);
-        saveToSupabase('ai', reply);  // 存储AI回复
+        saveToSupabase('ai', reply);
       } else {
         addMessage('ai', '不好意思网络有点慢😅 方便留个联系方式吗？我让导演直接加您沟通~');
       }
@@ -355,5 +354,5 @@ ${KNOWLEDGE_BASE}
   sendBtn.onclick = sendMessage;
   inputEl.onkeypress = function(e) { if(e.key === 'Enter') sendMessage(); };
 
-  console.log('[影月影视] AI智能客服 v4.1 (飞书通知版) 已加载');
+  console.log('[影月影视] AI智能客服 v4.2 (飞书通知开关版) 已加载');
 })();
