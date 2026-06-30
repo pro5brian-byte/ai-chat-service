@@ -1,3 +1,22 @@
+<style>
+#ai-chat-btn{position:fixed;bottom:20px;right:20px;width:60px;height:60px;border-radius:50%;background:#eb6a3e;color:#fff;border:none;cursor:pointer;font-size:24px;box-shadow:0 4px 20px rgba(0,0,0,0.2);z-index:99999;display:flex;align-items:center;justify-content:center;font-family:sans-serif}
+#ai-chat-box{position:fixed;bottom:90px;right:20px;width:380px;height:500px;background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,0.15);z-index:99998;display:none;flex-direction:column;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",sans-serif}
+#ai-chat-header{background:#eb6a3e;color:#fff;padding:14px 18px;font-weight:600;font-size:15px;display:flex;align-items:center;justify-content:space-between}
+#ai-chat-header .close-btn{background:none;border:none;color:#fff;font-size:18px;cursor:pointer}
+#ai-chat-messages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px}
+.ai-chat-msg{max-width:88%;padding:8px 12px;border-radius:12px;font-size:14px;line-height:1.5}
+.ai-chat-msg.user{align-self:flex-end;background:#eb6a3e;color:#fff}
+.ai-chat-msg.ai{align-self:flex-start;background:#f3f4f6;color:#333}
+.ai-chat-msg .time{font-size:11px;opacity:0.5;margin-top:3px}
+#ai-chat-input-area{padding:10px 12px;border-top:1px solid #eee;display:flex;gap:6px}
+#ai-chat-input{flex:1;padding:8px 12px;border:1px solid #e5e7eb;border-radius:20px;font-size:14px}
+#ai-chat-send{padding:8px 16px;background:#eb6a3e;color:#fff;border:none;border-radius:20px;cursor:pointer}
+.typing-dot{display:inline-block;width:6px;height:6px;background:#999;border-radius:50%;margin:0 2px;animation:typing 1.4s infinite}
+@keyframes typing{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-4px)}}
+#ai-chat-btn{font-size:0!important;width:auto!important;padding:12px 24px!important;border-radius:24px!important}
+#ai-chat-btn::before{content:"💬 在线客服";font-size:14px}
+</style>
+<script>
 (function(){
   // ====== Supabase 配置 ======
   var SUPABASE_URL='https://jtqwvrpjmvinyznmbcpl.supabase.co';
@@ -8,7 +27,7 @@
   var hasNotifiedFeishu=false;
   
   // 邮件通知标志
-  var hasNotifiedEmail=false;
+  var hasNotifiedEmail=false;var isHumanMode=false;var humanPollTimer=null;var HUMAN_TABLE='human_replies';
   
   // AI 配置
   var C={apiKey:'sk-94GVykLFgWKkU1OwC27iK1kQC0S6asUZYZRtVvINHrYRrjWP',apiUrl:'https://api.moonshot.cn/v1/chat/completions',model:'moonshot-v1-8k',welcome:'您好！我是影月影视的小影~ 咱们专做企业宣传片、广告片、短视频，请问您想拍什么类型？',aiName:'在线客服小影',maxHistory:10};
@@ -58,64 +77,38 @@
     }catch(e){console.log('[邮件] 异常:',e.message);}
   }
   
-  // 系统提示词
-  var SP='你是影月影视的客服小影，13年影视制作经验，服务过500多家上市公司。主营业务：企业宣传片、广告片、短视频、产品视频、活动记录。价格区间5万-50万。\n\n【回复规范】\n1. 每次回复不超过50字\n2. 第3句后才能问客户要微信/手机号\n3. 语气亲切，像朋友聊天\n4. 引导留联系方式时话术："方便留个微信或手机号吗？我让导演直接加您给您详细方案~"\n5. 不问预算，不问公司名，不问片长\n6. 不主动发微信号，客户要才给\n7. 表情适度，不要每条都加\n8. 客户问导演微信时，回复："我们导演微信是18621893879，您直接加就行~"\n\n【常见问题】\n- 多少钱：看拍摄天数和后期复杂度，一般区间5万-50万\n- 拍多久：一般2-3天拍摄，1-2周后期\n- 能开发票：可以开增值税专用发票\n- 能做动画：有三维动画和MG动画团队\n- 外地能拍：全国都可以去\n- 能航拍：有CAAC持证飞手\n\n【知识库匹配】根据问题匹配知识库，用对应答案回复。';
+  function checkHumanReplies(){try{fetch(SUPABASE_URL+'/rest/v1/'+HUMAN_TABLE+'?visitor_id=eq.'+vid+'&is_read=eq.false&order=id.asc',{headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}}).then(function(r){return r.json();}).then(function(data){if(data&&data.length>0){data.forEach(function(reply){if(reply.content.indexOf('[SYSTEM:')!==0){A('ai',reply.content);H.push({role:'assistant',content:reply.content});saveToDB('ai',reply.content);}if(reply.content==='[SYSTEM:ADMIN_TAKEOVER]'){isHumanMode=true;updateHumanUI();}if(reply.content==='[SYSTEM:ADMIN_RELEASE]'){isHumanMode=false;updateHumanUI();}});}}).catch(function(e){});}catch(e){}}function startHumanPoll(){if(humanPollTimer)return;humanPollTimer=setInterval(checkHumanReplies,3000);}function updateHumanUI(){var bar=document.getElementById('human-status-bar');if(isHumanMode){if(!bar){bar=document.createElement('div');bar.id='human-status-bar';bar.style.cssText='background:#10b981;color:#fff;padding:8px 12px;font-size:13px;text-align:center;border-bottom:1px solid #059669;';bar.innerHTML='👤 人工客服为您服务中';var box=document.getElementById('ai-chat-box');if(box&&box.children.length>1)box.insertBefore(bar,box.children[1]);}}else{if(bar)bar.remove();}}
+  // 访客ID
+  var vid=localStorage.getItem('chat_vid');if(!vid){vid='V'+Date.now().toString(36)+Math.random().toString(36).substr(2,4);localStorage.setItem('chat_vid',vid);}
   
-  // 状态变量
-  var H=[];
-  
-  // DOM创建
-  var D=document.createElement('div');
-  D.id='ai-chat-widget';
-  D.innerHTML='<style>#ai-chat-btn{position:fixed;bottom:20px;right:20px;width:60px;height:60px;border-radius:50%;background:#eb6a3e;color:#fff;border:none;cursor:pointer;font-size:24px;box-shadow:0 4px 20px rgba(0,0,0,0.2);z-index:99999;display:flex;align-items:center;justify-content:center;font-family:sans-serif}#ai-chat-box{position:fixed;bottom:90px;right:20px;width:380px;height:500px;background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,0.15);z-index:99998;display:none;flex-direction:column;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",sans-serif}#ai-chat-header{background:#eb6a3e;color:#fff;padding:14px 18px;font-weight:600;font-size:15px;display:flex;align-items:center;justify-content:space-between}#ai-chat-header .close-btn{background:none;border:none;color:#fff;font-size:18px;cursor:pointer}#ai-chat-messages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px}.ai-chat-msg{max-width:88%;padding:8px 12px;border-radius:12px;font-size:14px;line-height:1.5}.ai-chat-msg.user{align-self:flex-end;background:#eb6a3e;color:#fff}.ai-chat-msg.ai{align-self:flex-start;background:#f3f4f6;color:#333}.ai-chat-msg .time{font-size:11px;opacity:0.5;margin-top:3px}#ai-chat-input-area{padding:10px 12px;border-top:1px solid #eee;display:flex;gap:6px}#ai-chat-input{flex:1;padding:8px 12px;border:1px solid #e5e7eb;border-radius:20px;font-size:14px}#ai-chat-send{padding:8px 16px;background:#eb6a3e;color:#fff;border:none;border-radius:20px;cursor:pointer}.typing-dot{display:inline-block;width:6px;height:6px;background:#999;border-radius:50%;margin:0 2px;animation:typing 1.4s infinite}@keyframes typing{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-4px)}}#ai-chat-btn{font-size:0!important;width:auto!important;padding:12px 24px!important;border-radius:24px!important}#ai-chat-btn::before{content:"💬 在线客服";font-size:14px}</style><button id="ai-chat-btn">💬</button><div id="ai-chat-box"><div id="ai-chat-header"><span>📹 在线客服小影</span><button class="close-btn">✕</button></div><div id="ai-chat-messages"></div><div id="ai-chat-input-area"><input id="ai-chat-input" type="text" placeholder="请输入您的问题..." maxlength="200"><button id="ai-chat-send">发送</button></div></div>';
-  document.body.appendChild(D);
-  
-  // 元素引用
-  var B=document.getElementById('ai-chat-btn');
-  var P=document.getElementById('ai-chat-box');
-  var M=document.getElementById('ai-chat-messages');
-  var I=document.getElementById('ai-chat-input');
-  var S=document.getElementById('ai-chat-send');
-  var X=document.querySelector('#ai-chat-header .close-btn');
-  
-  // 事件绑定
-  B.onclick=function(){P.style.display=P.style.display==='flex'?'none':'flex';if(P.style.display==='flex'&&M.children.length===0){var w=C.welcome;A('ai',w);H.push({role:'assistant',content:w});saveToDB('ai',w);}I.focus();};
-  X.onclick=function(){P.style.display='none';};
-  S.onclick=send;
-  I.onkeydown=function(e){if(e.key==='Enter')send();};
-  
-  function A(r,c){
-    var d=document.createElement('div');
-    d.className='ai-chat-msg '+r;
-    if(r==='typing'){d.innerHTML='<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>';}
-    else{var tm=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});d.innerHTML=E(c)+'<div class="time">'+tm+'</div>';}
-    M.appendChild(d);M.scrollTop=M.scrollHeight;
-    return d;
-  }
-  function E(t){var d=document.createElement('div');d.textContent=t;return d.innerHTML.replace(/\n/g,'<br>')}
-  
-  // 存储到Supabase
-  function saveToDB(r,c){
-    try{fetch(SUPABASE_URL+'/rest/v1/chat_records',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({visitor_id:vid,role:r,content:c})}).catch(function(){});}catch(e){}
-  }
-  
-  // 获取或创建访客ID
-  var vid=localStorage.getItem('chat_vid');
-  if(!vid){vid='V'+Date.now().toString(36)+Math.random().toString(36).substr(2,4);localStorage.setItem('chat_vid',vid);}
-  
-  // 发送消息
-  async function send(){
-    var t=I.value.trim();if(!t)return;I.value='';
-    A('user',t);H.push({role:'user',content:t});if(H.length>C.maxHistory)H=H.slice(-C.maxHistory);saveToDB('user',t);
-    var userMsgCount=H.filter(function(m){return m.role==='user'}).length;
-    if(userMsgCount===2){var summary=H.slice(-4).map(function(m){return m.role==='user'?'【客户】'+m.content:'【小影】'+m.content}).join('\n');sendFeishuNotification(summary);sendEmailNotification(summary);}
-    var typing=A('typing','');S.disabled=true;
+  // 存储到 Supabase
+  function saveToDB(role,content){
     try{
-      var res=await fetch(C.apiUrl,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+C.apiKey},body:JSON.stringify({model:C.model,messages:[{role:'system',content:SP}].concat(H),temperature:0.7,max_tokens:200})});
-      var data=await res.json();typing.remove();
-      if(data.choices&&data.choices[0]){var reply=data.choices[0].message.content;A('ai',reply);H.push({role:'assistant',content:reply});if(H.length>C.maxHistory)H=H.slice(-C.maxHistory);saveToDB('ai',reply);}
-      else{A('ai','不好意思网络有点慢😅 方便留个联系方式吗？我让导演直接加您沟通~');}
-    }catch(e){typing.remove();A('ai','网络不太稳😅 方便留个联系方式吗？我让导演直接加您沟通~');}
-    S.disabled=false;I.focus();
+      fetch(SUPABASE_URL+'/rest/v1/chat_records',{
+        method:'POST',
+        headers:{
+          'apikey':SUPABASE_KEY,
+          'Authorization':'Bearer '+SUPABASE_KEY,
+          'Content-Type':'application/json',
+          'Prefer':'return=minimal'
+        },
+        body:JSON.stringify({visitor_id:vid,role:role,content:content})
+      }).then(function(r){if(!r.ok)console.log('[DB] 存储失败:'+r.status);else console.log('[DB] 存储成功');}).catch(function(e){console.log('[DB] 网络错误:'+e.message);});
+    }catch(e){console.log('[DB] 异常:'+e.message);}
   }
+  
+  var SP='你是【影月影视】的在线客服小影，一家专业影视制作公司。\n\n【业务】企业宣传片、广告片、短视频、产品视频、活动记录、人物访谈、工厂实拍、品牌故事片、微电影、TVC广告、三维动画、MG动画、无人机航拍、直播服务。所有项目均为定制，根据客户需求、拍摄难度和动画效果报价，价格区间5万-50万。前期咨询和方案沟通完全免费。\n\n【公司实力】影月影视成立于2012年，专注影视制作13年，服务过500多家上市公司和行业龙头。合作客户包括：华为、腾讯、阿里巴巴、比亚迪、美的、格力、顺丰、万科、海底捞、小米等。团队有资深导演、专业摄影师、后期特效师，设备齐全，质量有保障。\n\n【核心要求】1.每次回复绝对不能超过50个字 2.语气要像真人客服，态度诚恳、热情、认真积极 3.回答要专业但不生硬，像朋友一样真诚交流\n\n【绝对禁令】1.一次对话中绝对不能主动推销任何联系方式 2.绝对不能出现"加导演微信""加微信聊""18621893879""导演微信"等类似表达 3.前2次回复绝对不能要联系方式、不能提微信、电话、加好友 4.第3次回复及以后，如果客户还没主动给联系方式，可以问一次 5.一次对话中询问联系方式只能说一次 6.绝对不能提具体价格数字 7.客户问价格时，说"都是定制的，看具体需求"\n\n【正确问联系方式】第3次才能说一次："对了，聊了这么多还没请教您怎么称呼？方便留个微信或手机号吗？我把您的需求跟导演说一下，让导演直接加您沟通~"\n\n【回复策略】第1次：热情回答+展示2-3个知名企业+问行业，绝对不能推微信。第2次：认真解答+展示能力+关心需求，绝对不能推微信。第3次及以后：正常回答，如果还没问过联系方式，问一次。\n\n【行业案例】制造业：比亚迪、格力、美的。科技：华为、腾讯、阿里巴巴。餐饮：海底捞、西贝、瑞幸咖啡。房地产：万科、碧桂园、保利。\n\n【开场策略】第1句：认真回答+展示2-3个知名企业+问客户行业。客户说了行业后：匹配该行业明星企业+说"这个行业我们拍过很多"。然后问："您是想拍品牌宣传片还是产品视频？"';
+  
+  var s=document.createElement('style');document.head.appendChild(s);
+  var b=document.createElement('button');b.id='ai-chat-btn';b.innerHTML='📹';document.body.appendChild(b);
+  var x=document.createElement('div');x.id='ai-chat-box';x.innerHTML='<div id="ai-chat-header"><span>'+C.aiName+'</span><button class="close-btn" onclick="document.getElementById(\'ai-chat-box\').style.display=\'none\'">✕</button></div><div id="ai-chat-messages"></div><div id="ai-chat-input-area"><input type="text" id="ai-chat-input" placeholder="输入您的问题..." autocomplete="off"><button id="ai-chat-send">发送</button></div>';document.body.appendChild(x);
+  var M=document.getElementById('ai-chat-messages'),I=document.getElementById('ai-chat-input'),S=document.getElementById('ai-chat-send');
+  var H=[],O=false;
+  function T(){O=!O;x.style.display=O?'flex':'none';if(O&&M.children.length===0){A('ai',C.welcome);}if(O)setTimeout(function(){I.focus()},100);}
+  b.onclick=T;
+  function A(r,c){var d=document.createElement('div');d.className='ai-chat-msg '+r;var t=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});if(r==='typing')d.innerHTML='<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>';else d.innerHTML=E(c)+'<div class="time">'+t+'</div>';M.appendChild(d);M.scrollTop=M.scrollHeight;return d;}
+  function E(t){var d=document.createElement('div');d.textContent=t;return d.innerHTML.replace(/\n/g,'<br>')}
+  async function send(){var t=I.value.trim();if(!t)return;I.value='';A('user',t);H.push({role:'user',content:t});if(H.length>C.maxHistory)H=H.slice(-C.maxHistory);saveToDB('user',t);if(isHumanMode){S.disabled=false;I.focus();return;}var userMsgCount=H.filter(function(m){return m.role==='user'}).length;if(userMsgCount===2){var summary=H.slice(-4).map(function(m){return m.role==='user'?'【客户】'+m.content:'【小影】'+m.content}).join('\n');sendFeishuNotification(summary);sendEmailNotification(summary);}var typing=A('typing','');S.disabled=true;try{var res=await fetch(C.apiUrl,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+C.apiKey},body:JSON.stringify({model:C.model,messages:[{role:'system',content:SP}].concat(H),temperature:0.7,max_tokens:200})});var data=await res.json();typing.remove();if(data.choices&&data.choices[0]){var reply=data.choices[0].message.content;A('ai',reply);H.push({role:'assistant',content:reply});if(H.length>C.maxHistory)H=H.slice(-C.maxHistory);saveToDB('ai',reply);}else{A('ai','不好意思网络有点慢😅 方便留个联系方式吗？我让导演直接加您沟通~');}}catch(e){typing.remove();A('ai','网络不太稳😅 方便留个联系方式吗？我让导演直接加您沟通~');}S.disabled=false;I.focus();}
+  S.onclick=send;I.onkeypress=function(e){if(e.key==='Enter')send();}startHumanPoll();
 })();
+</script>
