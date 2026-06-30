@@ -184,7 +184,6 @@ ${KNOWLEDGE_BASE}
 
     const visitorId = getVisitorId();
 
-    // 检查"仅首次通知"（默认开启）
     if (liveSettings.notifyFirstOnly !== false) {
       if (notifiedVisitors.has(visitorId)) return null;
       notifiedVisitors.add(visitorId);
@@ -200,43 +199,91 @@ ${KNOWLEDGE_BASE}
     return { type, visitorId };
   }
 
-  function sendNotification(message) {
+  function showNotifyStatus(status, msg) {
+    let el = document.getElementById('ai-notify-status');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'ai-notify-status';
+      el.style.cssText = 'position:fixed;bottom:80px;right:20px;z-index:99997;padding:6px 12px;border-radius:6px;font-size:12px;font-family:sans-serif;transition:0.3s;opacity:0;';
+      document.body.appendChild(el);
+    }
+    const colors = { sending: '#3b82f6', ok: '#10b981', fail: '#ef4444' };
+    el.style.background = colors[status] || '#666';
+    el.style.color = '#fff';
+    el.textContent = msg;
+    el.style.opacity = '1';
+    if (status !== 'sending') {
+      setTimeout(() => { el.style.opacity = '0'; }, 3000);
+    }
+  }
+
+  async function sendNotification(message) {
     const notifyConfig = shouldNotify();
-    if (!notifyConfig) return;
+    if (!notifyConfig) {
+      console.log('[通知] 无需发送（已发送过或通知已关闭）');
+      return;
+    }
 
     const { type, visitorId } = notifyConfig;
-    const payload = {
-      type: type,
-      visitorId: visitorId,
-      message: message,
-      time: new Date().toLocaleString('zh-CN')
-    };
+    const payload = { type, visitorId, message, time: new Date().toLocaleString('zh-CN') };
     const payloadStr = JSON.stringify(payload);
     const apiUrl = 'https://yingyue-notify.pro5-brian.workers.dev/';
 
-    // 方法1：fetch（带keepalive，页面关闭也能发送）
+    showNotifyStatus('sending', '🔔 正在发送通知...');
+    console.log('[通知] 开始发送，payload:', payload);
+
+    // 方法1：fetch
     try {
-      fetch(apiUrl, {
+      const res = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: payloadStr,
         keepalive: true
-      }).then(res => res.json()).then(data => {
-        console.log('[通知] fetch发送成功:', data);
-      }).catch(err => {
-        console.log('[通知] fetch失败，尝试beacon:', err.message);
-        // 方法2：navigator.sendBeacon（更可靠，页面关闭也能发送）
-        try {
-          const blob = new Blob([payloadStr], { type: 'application/json' });
-          navigator.sendBeacon(apiUrl, blob);
-        } catch(e2) {}
       });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        console.log('[通知] ✅ fetch发送成功:', data);
+        showNotifyStatus('ok', '✅ 通知已发送');
+        return;
+      }
+      console.log('[通知] ⚠️ fetch返回非成功:', res.status, data);
+    } catch(err) {
+      console.log('[通知] ❌ fetch失败:', err.message);
+    }
+
+    // 方法2：XMLHttpRequest
+    try {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', apiUrl, true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          console.log('[通知] ✅ XHR发送成功');
+          showNotifyStatus('ok', '✅ 通知已发送(XHR)');
+        } else {
+          console.log('[通知] ❌ XHR失败:', xhr.status);
+          showNotifyStatus('fail', '❌ 通知发送失败');
+        }
+      };
+      xhr.onerror = () => {
+        console.log('[通知] ❌ XHR网络错误');
+        showNotifyStatus('fail', '❌ 通知网络错误');
+      };
+      xhr.send(payloadStr);
+      return;
+    } catch(err) {
+      console.log('[通知] ❌ XHR不可用:', err.message);
+    }
+
+    // 方法3：sendBeacon兜底
+    try {
+      const blob = new Blob([payloadStr], { type: 'application/json' });
+      const sent = navigator.sendBeacon(apiUrl, blob);
+      console.log('[通知] 📤 beacon发送:', sent ? '已入队' : '失败');
+      if (sent) showNotifyStatus('ok', '📤 通知已入队');
     } catch(e) {
-      // 方法3：sendBeacon兜底
-      try {
-        const blob = new Blob([payloadStr], { type: 'application/json' });
-        navigator.sendBeacon(apiUrl, blob);
-      } catch(e2) {}
+      console.log('[通知] ❌ beacon也失败:', e.message);
+      showNotifyStatus('fail', '❌ 通知全部失败');
     }
   }
 
@@ -356,12 +403,10 @@ ${KNOWLEDGE_BASE}
         chatHistory.push({role:'assistant', content:reply});
         if (chatHistory.length > CONFIG.maxHistory) chatHistory = chatHistory.slice(-CONFIG.maxHistory);
       } else {
-        // ⚠️ fallback回复也不能推微信
         addMessage('ai', '不好意思网络有点卡😅 方便留个手机号或微信吗？我让导演直接加您沟通~');
       }
     } catch(e) {
       typingEl.remove();
-      // ⚠️ 网络异常时也不能推微信
       addMessage('ai', '网络不太稳😅 方便留个联系方式吗？我让导演直接加您，一对一沟通更方便~');
     }
     sendBtn.disabled = false;
