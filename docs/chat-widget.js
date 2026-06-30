@@ -1,10 +1,19 @@
 (function(){
-  // ==================== 从localStorage读取配置 ====================
-  const rawSettings = localStorage.getItem('chat_settings');
-  const settings = rawSettings ? JSON.parse(rawSettings) : {};
+  // ==================== Supabase 配置 ====================
+  const SUPABASE_URL = 'https://jtqwvrpjmvinyznmbcpl.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_QhnOitR4Y8o0LSTfIR5MrQ_9w_f6xWm';
 
-  // 默认知识库 - ⚠️ 绝对不能包含任何主动推微信的内容
-  const DEFAULT_KNOWLEDGE = `【影月影视业务】
+  // ==================== AI 配置 ====================
+  const CONFIG = {
+    apiKey: 'sk-94GVykLFgWKkU1OwC27iK1kQC0S6asUZYZRtVvINHrYRrjWP',
+    apiUrl: 'https://api.moonshot.cn/v1/chat/completions',
+    model: 'moonshot-v1-8k',
+    welcomeMessage: '您好！我是影月影视的小影，很高兴为您服务~ 咱们专做企业宣传片、广告片、短视频等影视制作，请问您想拍什么类型的片子呢？😊',
+    aiName: '在线客服小影',
+    maxHistory: 10
+  };
+
+  const KNOWLEDGE_BASE = `【影月影视业务】
 企业宣传片、广告片、短视频、产品视频、活动记录、人物访谈、工厂实拍、品牌故事片、微电影、TVC广告、三维动画、MG动画、无人机航拍、直播服务。所有项目均为定制，根据客户需求、拍摄难度和动画效果报价，价格区间5万-50万。专业导演和拍摄团队，经验丰富，质量有保障。
 
 【报价方式】
@@ -18,33 +27,6 @@
 正确做法：聊了几句后，先问客户怎么称呼，再问是否方便留个联系方式，然后说"我把您的需求转告导演，让导演直接加您沟通~"。
 绝对不能出现"加导演微信""加微信聊""微信18621893879"等主动推销联系方式的话。`;
 
-  // 读取用户自定义知识库
-  function getCustomKnowledge() {
-    const raw = localStorage.getItem('chat_knowledge');
-    if (!raw) return null;
-    try {
-      const kb = JSON.parse(raw);
-      if (Array.isArray(kb) && kb.length > 0) {
-        return kb.map(k => `【${k.category}】Q：${k.question}\nA：${k.answer}`).join('\n\n');
-      }
-      return null;
-    } catch(e) { return null; }
-  }
-
-  const CONFIG = {
-    apiKey: 'sk-94GVykLFgWKkU1OwC27iK1kQC0S6asUZYZRtVvINHrYRrjWP',
-    apiUrl: 'https://api.moonshot.cn/v1/chat/completions',
-    model: 'moonshot-v1-8k',
-    welcomeMessage: settings.welcomeMessage || '您好！我是影月影视的小影，很高兴为您服务~ 咱们专做企业宣传片、广告片、短视频等影视制作，请问您想拍什么类型的片子呢？😊',
-    aiName: settings.aiName || '在线客服小影',
-    wxNumber: settings.wxNumber || '18621893879',
-    maxChars: parseInt(settings.maxChars) || 50,
-    wxTurn: parseInt(settings.wxTurn) || 3,
-    maxHistory: 10
-  };
-
-  const KNOWLEDGE_BASE = (getCustomKnowledge() || DEFAULT_KNOWLEDGE);
-
   const SYSTEM_PROMPT = `你是【影月影视】的在线客服小影，一家专业影视制作公司。请基于以下知识库回答客户问题：
 
 ${KNOWLEDGE_BASE}
@@ -53,7 +35,7 @@ ${KNOWLEDGE_BASE}
 影月影视成立于2012年，专注影视制作13年，服务过500多家上市公司和行业龙头。合作客户包括：华为、腾讯、阿里巴巴、比亚迪、美的、格力、顺丰、万科、海底捞、小米等。团队有资深导演、专业摄影师、后期特效师，设备齐全，质量有保障。
 
 【核心要求 - 必须遵守】
-1. 每次回复绝对不能超过${CONFIG.maxChars}个字
+1. 每次回复绝对不能超过50个字
 2. 语气要像真人客服，态度诚恳、热情、认真积极
 3. 回答要专业但不生硬，像朋友一样真诚交流
 
@@ -70,8 +52,8 @@ ${KNOWLEDGE_BASE}
 【🚫 绝对禁令 - 违反直接开除】
 1. **一次对话中，绝对不能主动给客户推销任何联系方式**
 2. **绝对不能出现"加导演微信""加微信聊""18621893879""导演微信"等类似表达**
-3. **前${CONFIG.wxTurn-1}次回复绝对不能要联系方式、不能提微信、电话、加好友**
-4. **第${CONFIG.wxTurn}次回复及以后，如果客户还没主动给联系方式，可以问一次**
+3. **前2次回复绝对不能要联系方式、不能提微信、电话、加好友**
+4. **第3次回复及以后，如果客户还没主动给联系方式，可以问一次**
 5. **一次对话中，询问联系方式只能说一次**
 6. **绝对不能提具体价格数字（如3万、5万、10万）**
 7. **客户问价格时，说"都是定制的，看具体需求"**
@@ -83,7 +65,7 @@ ${KNOWLEDGE_BASE}
 ❌ "方便的话可以加导演微信18621893879，给您详细方案~"
 ❌ 任何包含"导演微信""18621893879""加微信"的表达
 
-【✅ 正确的联系方式获取方式 - 第${CONFIG.wxTurn}次才能说一次】
+【✅ 正确的联系方式获取方式 - 第3次才能说一次】
 "对了，聊了这么多还没请教您怎么称呼？方便留个微信或手机号吗？我把您的需求跟导演说一下，让导演直接加您沟通~"
 
 【回复策略】
@@ -102,7 +84,7 @@ ${KNOWLEDGE_BASE}
 - **绝对不能要联系方式，绝对不能推微信**
 - 示例："咱们有资深导演团队，设备也是电影级的。您想拍什么风格的呢？跟我说说您的想法~"
 
-**第${CONFIG.wxTurn}次及以后回复策略：**
+**第3次及以后回复策略：**
 - 正常回答客户问题，保持诚恳认真
 - **如果还没问过联系方式，可以在这次问一次（仅限一次）：**
   "对了，聊了这么多还没请教您怎么称呼？方便留个微信或手机号吗？我把您的需求跟导演说一下，让导演直接加您沟通~"
@@ -155,135 +137,44 @@ ${KNOWLEDGE_BASE}
 - 态度诚恳最重要
 - **⚠️ 再次强调：绝对绝对不能主动推微信/导演微信/18621893879**`;
 
+  // ==================== 访客ID ====================
   function getVisitorId() {
     let id = localStorage.getItem('chat_visitor_id');
-    if (!id) { id = 'V' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5); localStorage.setItem('chat_visitor_id', id); }
+    if (!id) {
+      id = 'V' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+      localStorage.setItem('chat_visitor_id', id);
+    }
     return id;
   }
 
-  function saveConversation(role, content) {
-    const convs = JSON.parse(localStorage.getItem('chat_conversations') || '[]');
-    const visitorId = getVisitorId();
-    let conv = convs.find(c => c.visitorId === visitorId && Date.now() - c.time < 3600000);
-    if (!conv) { conv = { id: 'C' + Date.now(), visitorId, time: Date.now(), messages: [] }; convs.push(conv); }
-    conv.messages.push({ role, content, time: Date.now() });
-    conv.time = Date.now();
-    while (convs.length > 50) convs.shift();
-    localStorage.setItem('chat_conversations', JSON.stringify(convs));
-  }
-
-  // ==================== 发送通知 ====================
-  const notifiedVisitors = new Set();
-
-  function shouldNotify() {
-    let liveSettings = {};
+  // ==================== 存储到 Supabase ====================
+  function saveToSupabase(role, content) {
     try {
-      const raw = localStorage.getItem('chat_settings');
-      if (raw) liveSettings = JSON.parse(raw);
-    } catch(e) {}
-
-    const visitorId = getVisitorId();
-
-    if (liveSettings.notifyFirstOnly !== false) {
-      if (notifiedVisitors.has(visitorId)) return null;
-      notifiedVisitors.add(visitorId);
-    }
-
-    const emailOn = liveSettings.notifyEmail !== false;
-    const feishuOn = liveSettings.notifyFeishu !== false;
-    let type = 'both';
-    if (emailOn && !feishuOn) type = 'email';
-    if (!emailOn && feishuOn) type = 'feishu';
-    if (!emailOn && !feishuOn) return null;
-
-    return { type, visitorId };
-  }
-
-  function showNotifyStatus(status, msg) {
-    let el = document.getElementById('ai-notify-status');
-    if (!el) {
-      el = document.createElement('div');
-      el.id = 'ai-notify-status';
-      el.style.cssText = 'position:fixed;bottom:80px;right:20px;z-index:99997;padding:6px 12px;border-radius:6px;font-size:12px;font-family:sans-serif;transition:0.3s;opacity:0;';
-      document.body.appendChild(el);
-    }
-    const colors = { sending: '#3b82f6', ok: '#10b981', fail: '#ef4444' };
-    el.style.background = colors[status] || '#666';
-    el.style.color = '#fff';
-    el.textContent = msg;
-    el.style.opacity = '1';
-    if (status !== 'sending') {
-      setTimeout(() => { el.style.opacity = '0'; }, 3000);
-    }
-  }
-
-  async function sendNotification(message) {
-    const notifyConfig = shouldNotify();
-    if (!notifyConfig) {
-      console.log('[通知] 无需发送（已发送过或通知已关闭）');
-      return;
-    }
-
-    const { type, visitorId } = notifyConfig;
-    const payload = { type, visitorId, message, time: new Date().toLocaleString('zh-CN') };
-    const payloadStr = JSON.stringify(payload);
-    const apiUrl = 'https://yingyue-notify.pro5-brian.workers.dev/';
-
-    showNotifyStatus('sending', '🔔 正在发送通知...');
-    console.log('[通知] 开始发送，payload:', payload);
-
-    // 方法1：fetch
-    try {
-      const res = await fetch(apiUrl, {
+      const visitorId = getVisitorId();
+      fetch(SUPABASE_URL + '/rest/v1/chat_records', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: payloadStr,
-        keepalive: true
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        console.log('[通知] ✅ fetch发送成功:', data);
-        showNotifyStatus('ok', '✅ 通知已发送');
-        return;
-      }
-      console.log('[通知] ⚠️ fetch返回非成功:', res.status, data);
-    } catch(err) {
-      console.log('[通知] ❌ fetch失败:', err.message);
-    }
-
-    // 方法2：XMLHttpRequest
-    try {
-      const xhr = new XMLHttpRequest();
-      xhr.open('POST', apiUrl, true);
-      xhr.setRequestHeader('Content-Type', 'application/json');
-      xhr.onload = function() {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          console.log('[通知] ✅ XHR发送成功');
-          showNotifyStatus('ok', '✅ 通知已发送(XHR)');
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({
+          visitor_id: visitorId,
+          role: role,
+          content: content
+        })
+      }).then(function(res) {
+        if (res.ok) {
+          console.log('[Supabase] ✅ 存储成功');
         } else {
-          console.log('[通知] ❌ XHR失败:', xhr.status);
-          showNotifyStatus('fail', '❌ 通知发送失败');
+          console.log('[Supabase] ❌ 存储失败:', res.status);
         }
-      };
-      xhr.onerror = () => {
-        console.log('[通知] ❌ XHR网络错误');
-        showNotifyStatus('fail', '❌ 通知网络错误');
-      };
-      xhr.send(payloadStr);
-      return;
-    } catch(err) {
-      console.log('[通知] ❌ XHR不可用:', err.message);
-    }
-
-    // 方法3：sendBeacon兜底
-    try {
-      const blob = new Blob([payloadStr], { type: 'application/json' });
-      const sent = navigator.sendBeacon(apiUrl, blob);
-      console.log('[通知] 📤 beacon发送:', sent ? '已入队' : '失败');
-      if (sent) showNotifyStatus('ok', '📤 通知已入队');
+      }).catch(function(err) {
+        console.log('[Supabase] ❌ 网络错误:', err.message);
+      });
     } catch(e) {
-      console.log('[通知] ❌ beacon也失败:', e.message);
-      showNotifyStatus('fail', '❌ 通知全部失败');
+      console.log('[Supabase] ❌ 异常:', e.message);
     }
   }
 
@@ -372,13 +263,13 @@ ${KNOWLEDGE_BASE}
     const text = inputEl.value.trim();
     if (!text) return;
     inputEl.value = '';
+
     addMessage('user', text);
-    saveConversation('user', text);
     chatHistory.push({role:'user', content:text});
     if (chatHistory.length > CONFIG.maxHistory) chatHistory = chatHistory.slice(-CONFIG.maxHistory);
 
-    // 🔥 用户发送消息时立即触发通知（不等待AI回复）
-    sendNotification(text);
+    // 🔥 存储到 Supabase
+    saveToSupabase('user', text);
 
     const typingEl = addMessage('typing', '');
     sendBtn.disabled = true;
@@ -399,11 +290,11 @@ ${KNOWLEDGE_BASE}
       if (data.choices && data.choices[0]) {
         const reply = data.choices[0].message.content;
         addMessage('ai', reply);
-        saveConversation('ai', reply);
         chatHistory.push({role:'assistant', content:reply});
         if (chatHistory.length > CONFIG.maxHistory) chatHistory = chatHistory.slice(-CONFIG.maxHistory);
+        saveToSupabase('ai', reply);  // 存储AI回复
       } else {
-        addMessage('ai', '不好意思网络有点卡😅 方便留个手机号或微信吗？我让导演直接加您沟通~');
+        addMessage('ai', '不好意思网络有点慢😅 方便留个联系方式吗？我让导演直接加您沟通~');
       }
     } catch(e) {
       typingEl.remove();
@@ -416,5 +307,5 @@ ${KNOWLEDGE_BASE}
   sendBtn.onclick = sendMessage;
   inputEl.onkeypress = function(e) { if(e.key === 'Enter') sendMessage(); };
 
-  console.log('[影月影视] AI智能客服 v2.2 已加载');
+  console.log('[影月影视] AI智能客服 v4.0 (Supabase版) 已加载');
 })();
