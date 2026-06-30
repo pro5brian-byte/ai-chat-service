@@ -185,6 +185,47 @@ ${KNOWLEDGE_BASE}
     }
   }
 
+  // ==================== 邮件通知（Resend API）====================
+  let hasNotifiedEmail = false;
+
+  function sendEmailNotification(content) {
+    try {
+      const settings = JSON.parse(localStorage.getItem('chat_settings') || '{}');
+      // 邮件通知默认关闭，需要配置 resendApiKey 和 notifyEmail 才启用
+      if (settings.notifyEmail !== true) return;
+      if (!settings.resendApiKey || !settings.emailTo) return;
+    } catch(e) { return; }
+
+    // 每个访客只通知一次
+    if (hasNotifiedEmail) return;
+    hasNotifiedEmail = true;
+
+    const visitorId = getVisitorId();
+    const summary = '【影月影视】新客户咨询\n\n💬 对话内容：\n' + content.substring(0, 300) + '\n\n👤 访客ID：' + visitorId + '\n🕐 时间：' + new Date().toLocaleString('zh-CN');
+
+    try {
+      fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + JSON.parse(localStorage.getItem('chat_settings') || '{}').resendApiKey,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          from: JSON.parse(localStorage.getItem('chat_settings') || '{}').emailFrom || 'onboarding@resend.dev',
+          to: JSON.parse(localStorage.getItem('chat_settings') || '{}').emailTo,
+          subject: '【影月影视】新客户咨询提醒',
+          text: summary
+        })
+      }).then(function(res) {
+        console.log('[邮件] 发送状态:', res.status);
+      }).catch(function(err) {
+        console.log('[邮件] 发送失败:', err.message);
+      });
+    } catch(e) {
+      console.log('[邮件] 异常:', e.message);
+    }
+  }
+
   // ==================== 存储到 Supabase ====================
   function saveToSupabase(role, content) {
     try {
@@ -309,13 +350,14 @@ ${KNOWLEDGE_BASE}
     // 🔥 存储到 Supabase
     saveToSupabase('user', text);
 
-    // 🔥 发送飞书通知（客户发第2条消息时通知）
+    // 🔥 发送飞书通知 + 邮件通知（客户发第2条消息时通知）
     const userMsgCount = chatHistory.filter(m => m.role === 'user').length;
     if (userMsgCount === 2) {
       const summary = chatHistory.slice(-4).map(m => {
         return m.role === 'user' ? '【客户】' + m.content : '【小影】' + m.content;
       }).join('\n');
       sendFeishuNotification(summary);
+      sendEmailNotification(summary);
     }
 
     const typingEl = addMessage('typing', '');
@@ -354,5 +396,5 @@ ${KNOWLEDGE_BASE}
   sendBtn.onclick = sendMessage;
   inputEl.onkeypress = function(e) { if(e.key === 'Enter') sendMessage(); };
 
-  console.log('[影月影视] AI智能客服 v4.2 (飞书通知开关版) 已加载');
+  console.log('[影月影视] AI智能客服 v4.3 (飞书+邮件通知版) 已加载');
 })();
