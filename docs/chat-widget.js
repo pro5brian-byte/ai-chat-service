@@ -1,1 +1,227 @@
-(function(){var API='https://jtqwvrpjmvinyznmbcpl.supabase.co/rest/v1';var KEY='sb_publishable_QhnOitR4Y8o0LSTfIR5MrQ_9w_f6xWm';var SP='你是影月影视的客服小影，13年影视制作经验，服务过500多家上市公司。主营业务：企业宣传片、广告片、短视频、产品视频、活动记录。价格区间5万-50万。\n\n【回复规范】\n1. 每次回复不超过50字\n2. 第3句后才能问客户要微信/手机号\n3. 语气亲切，像朋友聊天\n4. 引导留联系方式时话术："方便留个微信或手机号吗？我让导演直接加您给您详细方案~"\n5. 不问预算，不问公司名，不问片长\n6. 不主动发微信号，客户要才给\n7. 表情适度，不要每条都加\n8. 客户问导演微信时，回复："我们导演微信是{wx}，您直接加就行~"\n\n【常见问题】\n- 多少钱：看拍摄天数和后期复杂度，一般区间5万-50万\n- 拍多久：一般2-3天拍摄，1-2周后期\n- 能开发票：可以开增值税专用发票\n- 能做动画：有三维动画和MG动画团队\n- 外地能拍：全国都可以去\n- 能航拍：有CAAC持证飞手\n\n【知识库匹配】根据问题匹配知识库，用对应答案回复。';var F=localStorage.getItem('chat_visitor_id');if(!F){F='v'+Date.now()+Math.random().toString(36).substring(2,8);localStorage.setItem('chat_visitor_id',F);}function uuid(){return crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).substring(2,9);}function saveToDB(r,c){try{fetch(API+'/chat_records',{method:'POST',headers:{'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({id:uuid(),visitor_id:F,role:r,content:c,created_at:new Date().toISOString()})}).catch(function(){});}catch(e){}}var H=[];var hasNotified=false;function sendFeishuNotification(content){try{var settings=JSON.parse(localStorage.getItem('chat_settings')||'{}');if(settings.notifyFeishu===false)return;}catch(e){return;}if(hasNotified)return;hasNotified=true;var visitorId=localStorage.getItem('chat_visitor_id')||'unknown';var summary='【影月影视】新客户咨询\n\n💬 对话内容：\n'+content.substring(0,300)+'\n\n👤 访客ID：'+visitorId+'\n🕐 时间：'+new Date().toLocaleString('zh-CN');try{fetch('https://open.feishu.cn/open-apis/bot/v2/hook/8e1b353c-12c3-4d34-9851-5f93cce82e0e',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({msg_type:'text',content:{text:summary}})}).then(function(r){console.log('[飞书] 状态:',r.status);}).catch(function(e){console.log('[飞书] 失败:',e.message);});}catch(e){console.log('[飞书] 异常:',e.message);}}var EMAIL_CONFIG={apiKey:'re_2RD5eYmj_FSTXWH1sRr65yh4ebBGHivpm',from:'onboarding@resend.dev',to:'908159172@qq.com'};var hasNotifiedEmail=false;function sendEmailNotification(content){try{var settings=JSON.parse(localStorage.getItem('chat_settings')||'{}');if(settings.notifyEmail===false)return;}catch(e){return;}if(hasNotifiedEmail)return;hasNotifiedEmail=true;var visitorId=localStorage.getItem('chat_visitor_id')||'unknown';var summary='【影月影视】新客户咨询\n\n💬 对话内容：\n'+content.substring(0,300)+'\n\n👤 访客ID：'+visitorId+'\n🕐 时间：'+new Date().toLocaleString('zh-CN');var apiKey=settings.resendApiKey||EMAIL_CONFIG.apiKey;var from_=settings.emailFrom||EMAIL_CONFIG.from;var to=settings.emailTo||EMAIL_CONFIG.to;if(!apiKey||!to)return;try{fetch('https://api.resend.com/emails',{method:'POST',headers:{'Authorization':'Bearer '+apiKey,'Content-Type':'application/json'},body:JSON.stringify({from:from_,to:to,subject:'【影月影视】新客户咨询提醒',text:summary})}).then(function(res){console.log('[邮件] 状态:',res.status);if(res.ok){console.log('[邮件] ✅ 发送成功');}else{res.text().then(function(t){console.log('[邮件] ❌ 响应:',t);});}}).catch(function(err){console.log('[邮件] 失败:',err.message);});}catch(e){console.log('[邮件] 异常:',e.message);}}var D=document.createElement('div');D.id='ai-chat-widget';D.innerHTML='<style>#ai-chat-widget{position:fixed;bottom:20px;right:20px;z-index:99999;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",PingFang SC,sans-serif}#ai-chat-btn{width:60px;height:60px;border-radius:50%;background:#eb6a3e;color:#fff;border:none;cursor:pointer;box-shadow:0 4px 16px rgba(235,106,62,0.35);display:flex;align-items:center;justify-content:center;font-size:24px;transition:all .3s;position:relative}#ai-chat-btn:hover{transform:scale(1.05);box-shadow:0 6px 20px rgba(235,106,62,0.45)}#ai-chat-btn::after{content:"";position:absolute;width:12px;height:12px;background:#10b981;border:2px solid #fff;border-radius:50%;top:2px;right:2px}#ai-chat-panel{position:absolute;bottom:76px;right:0;width:360px;height:520px;background:#fff;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.15);display:none;flex-direction:column;overflow:hidden;border:1px solid #f1f5f9}#ai-chat-header{background:#1e293b;color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between}#ai-chat-header .title{font-weight:600;font-size:15px;display:flex;align-items:center;gap:8px}#ai-chat-header .status{font-size:11px;color:#94a3b8}#ai-chat-close{background:none;border:none;color:#fff;font-size:18px;cursor:pointer;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:50%}#ai-chat-close:hover{background:rgba(255,255,255,0.1)}#ai-chat-messages{flex:1;padding:16px;overflow-y:auto;background:#f8fafc}#ai-chat-input-area{padding:12px 16px;border-top:1px solid #f1f5f9;background:#fff;display:flex;gap:8px}#ai-chat-input{flex:1;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;outline:none;font-size:14px;font-family:inherit}#ai-chat-input:focus{border-color:#eb6a3e}#ai-chat-send{padding:10px 16px;background:#eb6a3e;color:#fff;border:none;border-radius:10px;cursor:pointer;font-size:14px;font-weight:500}#ai-chat-send:hover{background:#d55a2e}.msg{margin-bottom:12px;max-width:85%;padding:10px 14px;border-radius:12px;font-size:14px;line-height:1.5;word-break:break-all}.msg-user{background:#eb6a3e;color:#fff;margin-left:auto;border-bottom-right-radius:4px}.msg-ai{background:#fff;color:#334155;border:1px solid #f1f5f9;border-bottom-left-radius:4px}.msg-typing{display:flex;gap:4px;align-items:center;padding:12px 14px}.msg-typing span{width:6px;height:6px;background:#cbd5e1;border-radius:50%;animation:typing 1.4s infinite}.msg-typing span:nth-child(2){animation-delay:.2s}.msg-typing span:nth-child(3){animation-delay:.4s}@keyframes typing{0%,80%,100%{transform:scale(0.6);opacity:.4}40%{transform:scale(1);opacity:1}}@media(max-width:480px){#ai-chat-panel{width:calc(100vw - 40px);height:calc(100vh - 100px)}}</style><button id="ai-chat-btn">💬</button><div id="ai-chat-panel"><div id="ai-chat-header"><div><div class="title">📹 在线客服小影</div><div class="status">🟢 在线</div></div><button id="ai-chat-close">✕</button></div><div id="ai-chat-messages"></div><div id="ai-chat-input-area"><input id="ai-chat-input" type="text" placeholder="请输入您的问题..." maxlength="200"><button id="ai-chat-send">发送</button></div></div>';document.body.appendChild(D);var B=document.getElementById('ai-chat-btn');var P=document.getElementById('ai-chat-panel');var M=document.getElementById('ai-chat-messages');var I=document.getElementById('ai-chat-input');var S=document.getElementById('ai-chat-send');var X=document.getElementById('ai-chat-close');B.onclick=function(){P.style.display=P.style.display==='flex'?'none':'flex';if(P.style.display==='flex'&&M.children.length===0){var welcomeMsg='您好！我是影月影视的小影，很高兴为您服务~ 咱们专做企业宣传片、广告片、短视频等影视制作，请问您想拍什么类型的片子呢？';A('ai',welcomeMsg);H.push({role:'assistant',content:welcomeMsg});saveToDB('ai',welcomeMsg);}I.focus();};X.onclick=function(){P.style.display='none';};function A(r,t){var d=document.createElement('div');d.className='msg msg-'+r;if(r==='typing'){d.innerHTML='<div class="msg-typing"><span></span><span></span><span></span></div>';}else{d.textContent=t;}M.appendChild(d);M.scrollTop=M.scrollHeight;return d;}async function send(){var t=I.value.trim();if(!t)return;I.value='';A('user',t);H.push({role:'user',content:t});if(H.length>C.maxHistory)H=H.slice(-C.maxHistory);saveToDB('user',t);var userMsgCount=H.filter(function(m){return m.role==='user'}).length;if(userMsgCount===2){var summary=H.slice(-4).map(function(m){return m.role==='user'?'【客户】'+m.content:'【小影】'+m.content}).join('\n');sendFeishuNotification(summary);sendEmailNotification(summary);}var typing=A('typing','');S.disabled=true;try{var res=await fetch(C.apiUrl,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+C.apiKey},body:JSON.stringify({model:C.model,messages:[{role:'system',content:SP}].concat(H),temperature:0.7,max_tokens:200})});var data=await res.json();typing.remove();if(data.choices&&data.choices[0]){var reply=data.choices[0].message.content;A('ai',reply);H.push({role:'assistant',content:reply});if(H.length>C.maxHistory)H=H.slice(-C.maxHistory);saveToDB('ai',reply);}else{A('ai','不好意思网络有点慢😅 方便留个联系方式吗？我让导演直接加您沟通~');}}catch(e){typing.remove();A('ai','网络不太稳😅 方便留个联系方式吗？我让导演直接加您沟通~');}S.disabled=false;I.focus();}S.onclick=send;I.onkeydown=function(e){if(e.key==='Enter')send();};var C={apiKey:'sk-94GVykLFgWKkU1OwC27iK1kQC0S6asUZYZRtVvINHrYRrjWP',apiUrl:'https://api.moonshot.cn/v1/chat/completions',model:'moonshot-v1-8k',welcome:'您好！我是影月影视的小影~ 咱们专做企业宣传片、广告片、短视频，请问您想拍什么类型？',aiName:'在线客服小影',maxHistory:10};})();
+(function(){
+  // Supabase配置
+  var SUPABASE_URL='https://jtqwvrpjmvinyznmbcpl.supabase.co';
+  var SUPABASE_KEY='sb_publishable_QhnOitR4Y8o0LSTfIR5MrQ_9w_f6xWm';
+  
+  // 获取或创建访客ID
+  var vid=localStorage.getItem('chat_vid');
+  if(!vid){vid='V'+Date.now().toString(36)+Math.random().toString(36).substr(2,4);localStorage.setItem('chat_vid',vid);}
+  
+  // 存储到Supabase
+  function saveToDB(role,content){
+    try{
+      fetch(SUPABASE_URL+'/rest/v1/chat_records',{
+        method:'POST',
+        headers:{
+          'apikey':SUPABASE_KEY,
+          'Authorization':'Bearer '+SUPABASE_KEY,
+          'Content-Type':'application/json',
+          'Prefer':'return=minimal'
+        },
+        body:JSON.stringify({visitor_id:vid,role:role,content:content})
+      }).then(function(r){if(!r.ok)console.log('[DB]存储失败:'+r.status);}).catch(function(e){});
+    }catch(e){}
+  }
+  
+  // 飞书通知函数
+  var hasNotifiedFeishu=false;
+  function sendFeishuNotification(content){
+    try{
+      var settings=JSON.parse(localStorage.getItem('chat_settings')||'{}');
+      if(settings.notifyFeishu===false)return;
+    }catch(e){return;}
+    if(hasNotifiedFeishu)return;
+    hasNotifiedFeishu=true;
+    try{
+      fetch('https://open.feishu.cn/open-apis/bot/v2/hook/8e1b353c-12c3-4d34-9851-5f93cce82e0e',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({msg_type:'text',content:{text:'【影月影视】新客户咨询\n\n'+content.substring(0,500)+'\n\n访客:'+vid+'\n时间:'+new Date().toLocaleString('zh-CN')}})
+      }).then(function(r){console.log('[飞书]状态:'+r.status);}).catch(function(e){});
+    }catch(e){}
+  }
+  
+  // 邮件通知函数（使用 FormSubmit.co - 不需要API Key，前端直接发送）
+  var EMAIL_TO='908159172@qq.com';
+  
+  function sendEmailNotification(content){
+    try{
+      var settings=JSON.parse(localStorage.getItem('chat_settings')||'{}');
+      // 只有用户明确关闭才不发送（默认开启）
+      if(settings.notifyEmail===false)return;
+    }catch(e){return;}
+    if(hasNotifiedEmail)return;
+    hasNotifiedEmail=true;
+    var summary='【影月影视】新客户咨询\n\n💬 对话内容：\n'+content.substring(0,300)+'\n\n👤 访客ID：'+vid+'\n🕐 时间：'+new Date().toLocaleString('zh-CN');
+    try{
+      fetch('https://formsubmit.co/ajax/'+EMAIL_TO,{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Accept':'application/json'},
+        body:JSON.stringify({_subject:'【影月影视】新客户咨询提醒',_captcha:false,_template:'table',消息内容:summary})
+      }).then(function(r){
+        console.log('[邮件] 发送状态:',r.status);
+        if(r.ok){console.log('[邮件] ✅ 发送成功');}
+        else{r.text().then(function(t){console.log('[邮件] ❌ 失败响应:',t);});}
+      }).catch(function(e){console.log('[邮件] 网络失败:',e.message);});
+    }catch(e){console.log('[邮件] 异常:',e.message);}
+  }
+  
+  // 访客ID
+  var vid=localStorage.getItem('chat_vid');if(!vid){vid='V'+Date.now().toString(36)+Math.random().toString(36).substr(2,4);localStorage.setItem('chat_vid',vid);}
+  
+  // 存储到 Supabase
+  function saveToDB(role,content){
+    try{
+      fetch(SUPABASE_URL+'/rest/v1/chat_records',{
+        method:'POST',
+        headers:{
+          'apikey':SUPABASE_KEY,
+          'Authorization':'Bearer '+SUPABASE_KEY,
+          'Content-Type':'application/json',
+          'Prefer':'return=minimal'
+        },
+        body:JSON.stringify({visitor_id:vid,role:role,content:content})
+      }).then(function(r){if(!r.ok)console.log('[DB] 存储失败:'+r.status);else console.log('[DB] 存储成功');}).catch(function(e){console.log('[DB] 网络错误:'+e.message);});
+    }catch(e){console.log('[DB] 异常:'+e.message);}
+  }
+  
+  // ====== Moonshot AI配置 ======
+  var API_KEY='sk-94GVykLFgWKkU1OwC27iK1kQC0S6asUZYZRtVvINHrYRrjWP';
+  var API_URL='https://api.moonshot.cn/v1/chat/completions';
+  var MODEL='moonshot-v1-8k';
+  var MAX_HISTORY=10;
+  var AI_NAME='在线客服小影';
+  
+  // 系统提示词
+  var SYSTEM_PROMPT='你是影月影视的客服小影，13年影视制作经验，服务过500多家上市公司。主营业务：企业宣传片、广告片、短视频、产品视频、活动记录。价格区间5万-50万。\\n\\n【回复规范】\\n1. 每次回复不超过50字\\n2. 第3句后才能问客户要微信/手机号\\n3. 语气亲切，像朋友聊天\\n4. 引导留联系方式时话术："方便留个微信或手机号吗？我让导演直接加您给您详细方案~"\\n5. 不问预算，不问公司名，不问片长\\n6. 不主动发微信号，客户要才给\\n7. 表情适度，不要每条都加\\n8. 客户问导演微信时，回复："我们导演微信是18621893879，您直接加就行~"\\n\\n【常见问题】\\n- 多少钱：看拍摄天数和后期复杂度，一般区间5万-50万\\n- 拍多久：一般2-3天拍摄，1-2周后期\\n- 能开发票：可以开增值税专用发票\\n- 能做动画：有三维动画和MG动画团队\\n- 外地能拍：全国都可以去\\n- 能航拍：有CAAC持证飞手\\n\\n【知识库匹配】根据问题匹配知识库，用对应答案回复。';
+  
+  // ====== 状态变量 ======
+  var messages=[];
+  var msgCount=0;
+  var hasAskedContact=false;
+  var hasNotifiedEmail=false;
+  
+  // ====== DOM元素 ======
+  var chatWidget=document.createElement('div');
+  chatWidget.id='ai-chat-widget';
+  chatWidget.innerHTML='<style>#ai-chat-btn{position:fixed;bottom:20px;right:20px;width:60px;height:60px;border-radius:50%;background:#eb6a3e;color:#fff;border:none;cursor:pointer;font-size:24px;box-shadow:0 4px 20px rgba(0,0,0,0.2);z-index:99999;display:flex;align-items:center;justify-content:center;font-family:sans-serif}#ai-chat-box{position:fixed;bottom:90px;right:20px;width:380px;height:500px;background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,0.15);z-index:99998;display:none;flex-direction:column;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",sans-serif}#ai-chat-header{background:#eb6a3e;color:#fff;padding:14px 18px;font-weight:600;font-size:15px;display:flex;align-items:center;justify-content:space-between}#ai-chat-header .close-btn{background:none;border:none;color:#fff;font-size:18px;cursor:pointer}#ai-chat-messages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px}.ai-chat-msg{max-width:88%;padding:8px 12px;border-radius:12px;font-size:14px;line-height:1.5}.ai-chat-msg.user{align-self:flex-end;background:#eb6a3e;color:#fff}.ai-chat-msg.ai{align-self:flex-start;background:#f3f4f6;color:#333}.ai-chat-msg .time{font-size:11px;opacity:0.5;margin-top:3px}#ai-chat-input-area{padding:10px 12px;border-top:1px solid #eee;display:flex;gap:6px}#ai-chat-input{flex:1;padding:8px 12px;border:1px solid #e5e7eb;border-radius:20px;font-size:14px}#ai-chat-send{padding:8px 16px;background:#eb6a3e;color:#fff;border:none;border-radius:20px;cursor:pointer}.typing-dot{display:inline-block;width:6px;height:6px;background:#999;border-radius:50%;margin:0 2px;animation:typing 1.4s infinite}@keyframes typing{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-4px)}}#ai-chat-btn{font-size:0!important;width:auto!important;padding:12px 24px!important;border-radius:24px!important}#ai-chat-btn::before{content:"💬 在线客服";font-size:14px}</style><button id="ai-chat-btn">💬</button><div id="ai-chat-box"><div id="ai-chat-header"><span>📹 在线客服小影</span><button class="close-btn">✕</button></div><div id="ai-chat-messages"></div><div id="ai-chat-input-area"><input id="ai-chat-input" type="text" placeholder="请输入您的问题..." maxlength="200"><button id="ai-chat-send">发送</button></div></div>';
+  document.body.appendChild(chatWidget);
+  
+  var btn=document.getElementById('ai-chat-btn');
+  var box=document.getElementById('ai-chat-box');
+  var closeBtn=box.querySelector('.close-btn');
+  var msgsDiv=document.getElementById('ai-chat-messages');
+  var input=document.getElementById('ai-chat-input');
+  var sendBtn=document.getElementById('ai-chat-send');
+  
+  // ====== 事件绑定 ======
+  btn.onclick=function(){box.style.display=box.style.display==='flex'?'none':'flex';if(box.style.display==='flex'&&msgsDiv.children.length===0){sendWelcome();}input.focus();};
+  closeBtn.onclick=function(){box.style.display='none';};
+  sendBtn.onclick=sendMessage;
+  input.onkeydown=function(e){if(e.key==='Enter')sendMessage();};
+  
+  // ====== 欢迎语 ======
+  function sendWelcome(){
+    var welcome='您好！我是影月影视的小影，很高兴为您服务~ 咱们专做企业宣传片、广告片、短视频等影视制作，请问您想拍什么类型的片子呢？';
+    addMessage('ai',welcome);
+    messages.push({role:'assistant',content:welcome});
+    saveToDB('ai',welcome);
+  }
+  
+  // ====== 添加消息到界面 ======
+  function addMessage(role,content){
+    var div=document.createElement('div');
+    div.className='ai-chat-msg '+role;
+    var time=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
+    div.innerHTML='<div>'+escapeHtml(content)+'</div><div class="time">'+time+'</div>';
+    msgsDiv.appendChild(div);
+    msgsDiv.scrollTop=msgsDiv.scrollHeight;
+  }
+  
+  function escapeHtml(text){
+    var div=document.createElement('div');
+    div.textContent=text;
+    return div.innerHTML;
+  }
+  
+  // ====== 显示输入中动画 ======
+  function showTyping(){
+    var div=document.createElement('div');
+    div.className='ai-chat-msg ai';
+    div.id='typing-indicator';
+    div.innerHTML='<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>';
+    msgsDiv.appendChild(div);
+    msgsDiv.scrollTop=msgsDiv.scrollHeight;
+    return div;
+  }
+  
+  // ====== 发送消息 ======
+  async function sendMessage(){
+    var text=input.value.trim();
+    if(!text)return;
+    input.value='';
+    
+    // 添加用户消息
+    addMessage('user',text);
+    messages.push({role:'user',content:text});
+    saveToDB('user',text);
+    msgCount++;
+    
+    // 第2条消息时发送通知
+    if(msgCount===2){
+      var summary=messages.slice(-4).map(function(m){return m.role==='user'?'【客户】'+m.content:'【小影】'+m.content;}).join('\\n');
+      sendFeishuNotification(summary);
+      sendEmailNotification(summary);
+    }
+    
+    // 第3条后询问联系方式
+    if(msgCount>=3&&!hasAskedContact){
+      hasAskedContact=true;
+      setTimeout(function(){
+        var contactMsg='聊了这么多还没请教您怎么称呼？方便留个微信或手机号吗？我把您的需求跟导演说一下，让导演直接加您沟通~';
+        addMessage('ai',contactMsg);
+        messages.push({role:'assistant',content:contactMsg});
+        saveToDB('ai',contactMsg);
+      },1500);
+      return;
+    }
+    
+    // 显示输入中
+    var typing=showTyping();
+    sendBtn.disabled=true;
+    
+    try{
+      var res=await fetch(API_URL,{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+API_KEY},
+        body:JSON.stringify({
+          model:MODEL,
+          messages:[{role:'system',content:SYSTEM_PROMPT}].concat(messages.slice(-MAX_HISTORY)),
+          temperature:0.7,
+          max_tokens:200
+        })
+      });
+      typing.remove();
+      var data=await res.json();
+      if(data.choices&&data.choices[0]){
+        var reply=data.choices[0].message.content;
+        addMessage('ai',reply);
+        messages.push({role:'assistant',content:reply});
+        saveToDB('ai',reply);
+      }else{
+        var fallback='不好意思网络有点慢😅 方便留个联系方式吗？我让导演直接加您沟通~';
+        addMessage('ai',fallback);
+        messages.push({role:'assistant',content:fallback});
+        saveToDB('ai',fallback);
+      }
+    }catch(e){
+      typing.remove();
+      var errMsg='网络不太稳😅 方便留个联系方式吗？我让导演直接加您沟通~';
+      addMessage('ai',errMsg);
+      messages.push({role:'assistant',content:errMsg});
+      saveToDB('ai',errMsg);
+    }
+    sendBtn.disabled=false;
+    input.focus();
+  }
+})();
