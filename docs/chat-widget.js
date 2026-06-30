@@ -175,7 +175,7 @@ ${KNOWLEDGE_BASE}
   // ==================== 发送通知 ====================
   const notifiedVisitors = new Set();
 
-  async function sendNotification(message) {
+  function shouldNotify() {
     let liveSettings = {};
     try {
       const raw = localStorage.getItem('chat_settings');
@@ -184,8 +184,9 @@ ${KNOWLEDGE_BASE}
 
     const visitorId = getVisitorId();
 
+    // 检查"仅首次通知"（默认开启）
     if (liveSettings.notifyFirstOnly !== false) {
-      if (notifiedVisitors.has(visitorId)) return;
+      if (notifiedVisitors.has(visitorId)) return null;
       notifiedVisitors.add(visitorId);
     }
 
@@ -194,25 +195,48 @@ ${KNOWLEDGE_BASE}
     let type = 'both';
     if (emailOn && !feishuOn) type = 'email';
     if (!emailOn && feishuOn) type = 'feishu';
-    if (!emailOn && !feishuOn) return;
+    if (!emailOn && !feishuOn) return null;
 
+    return { type, visitorId };
+  }
+
+  function sendNotification(message) {
+    const notifyConfig = shouldNotify();
+    if (!notifyConfig) return;
+
+    const { type, visitorId } = notifyConfig;
     const payload = {
       type: type,
       visitorId: visitorId,
       message: message,
       time: new Date().toLocaleString('zh-CN')
     };
+    const payloadStr = JSON.stringify(payload);
+    const apiUrl = 'https://yingyue-notify.pro5-brian.workers.dev/';
 
+    // 方法1：fetch（带keepalive，页面关闭也能发送）
     try {
-      const res = await fetch('https://yingyue-notify.pro5-brian.workers.dev/', {
+      fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: payloadStr,
+        keepalive: true
+      }).then(res => res.json()).then(data => {
+        console.log('[通知] fetch发送成功:', data);
+      }).catch(err => {
+        console.log('[通知] fetch失败，尝试beacon:', err.message);
+        // 方法2：navigator.sendBeacon（更可靠，页面关闭也能发送）
+        try {
+          const blob = new Blob([payloadStr], { type: 'application/json' });
+          navigator.sendBeacon(apiUrl, blob);
+        } catch(e2) {}
       });
-      const data = await res.json();
-      console.log('[通知]', res.ok ? '发送成功' : '发送失败', data);
     } catch(e) {
-      console.log('[通知] 请求异常:', e.message);
+      // 方法3：sendBeacon兜底
+      try {
+        const blob = new Blob([payloadStr], { type: 'application/json' });
+        navigator.sendBeacon(apiUrl, blob);
+      } catch(e2) {}
     }
   }
 
@@ -306,6 +330,9 @@ ${KNOWLEDGE_BASE}
     chatHistory.push({role:'user', content:text});
     if (chatHistory.length > CONFIG.maxHistory) chatHistory = chatHistory.slice(-CONFIG.maxHistory);
 
+    // 🔥 用户发送消息时立即触发通知（不等待AI回复）
+    sendNotification(text);
+
     const typingEl = addMessage('typing', '');
     sendBtn.disabled = true;
 
@@ -326,7 +353,6 @@ ${KNOWLEDGE_BASE}
         const reply = data.choices[0].message.content;
         addMessage('ai', reply);
         saveConversation('ai', reply);
-        await sendNotification(text);
         chatHistory.push({role:'assistant', content:reply});
         if (chatHistory.length > CONFIG.maxHistory) chatHistory = chatHistory.slice(-CONFIG.maxHistory);
       } else {
