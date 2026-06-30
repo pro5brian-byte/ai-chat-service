@@ -164,8 +164,9 @@ input:disabled + .slider { background: #e0e0e0; cursor: not-allowed; }
     <div class="menu-item" onclick="switchTab('visitors')" data-tab="visitors"><span class="emoji">👥</span> 访客记录</div>
     <div class="menu-item" onclick="switchTab('knowledge')" data-tab="knowledge"><span class="emoji">📚</span> 知识库</div>
     <div class="menu-item" onclick="switchTab('settings')" data-tab="settings"><span class="emoji">⚙️</span> 系统设置</div>
+    <div class="menu-item" onclick="switchTab('livechat')" data-tab="livechat"><span class="emoji">👤</span> 在线对话</div>
   </div>
-  <div class="footer">影月影视 AI智能客服<br>管理后台 v4.5</div>
+  <div class="footer">影月影视 AI智能客服<br>管理后台 v4.6</div>
 </div>
 
 <!-- 主内容区 -->
@@ -328,6 +329,19 @@ input:disabled + .slider { background: #e0e0e0; cursor: not-allowed; }
   </div>
 </div>
 
+<!-- ==================== 在线对话 ==================== -->
+<div id="tab-livechat" class="tab-panel" style="display:none">
+  <div class="topbar"><div><h1>在线对话</h1><div class="subtitle">实时接管访客对话，人工介入回复</div></div></div>
+  <div style="display:grid;grid-template-columns:300px 1fr;gap:20px;">
+    <div class="card" style="min-height:600px;max-height:700px;overflow-y:auto;"><div class="card-header"><h2>活跃访客</h2><button class="refresh-btn" onclick="loadLiveChatVisitors()">🔄 刷新</button></div><div id="livechat-visitors"><div class="empty-state"><div class="icon">👤</div><p>暂无访客</p></div></div></div>
+    <div class="card" style="min-height:600px;display:flex;flex-direction:column;">
+      <div class="card-header" style="justify-content:space-between;"><h2 id="livechat-title">选择访客开始对话</h2><div id="livechat-actions" style="display:none;gap:8px;"><button class="btn btn-primary" id="btn-takeover" onclick="takeoverVisitor()">✋ 接管对话</button><button class="btn btn-secondary" id="btn-release" onclick="releaseVisitor()" style="display:none;">🔓 释放对话</button></div></div>
+      <div id="livechat-messages" style="flex:1;overflow-y:auto;max-height:550px;padding:12px 0;"></div>
+      <div id="livechat-input-area" style="display:none;padding-top:12px;border-top:1px solid #f1f5f9;"><div style="display:flex;gap:8px;"><input type="text" id="livechat-input" placeholder="输入人工回复..." style="flex:1;padding:10px 14px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;" onkeypress="if(event.key==='Enter')sendHumanReply()"><button class="btn btn-primary" onclick="sendHumanReply()">发送</button></div></div>
+    </div>
+  </div>
+</div>
+
 </div>
 
 <!-- 对话详情模态框 -->
@@ -421,6 +435,7 @@ function switchTab(tab) {
   if (tab === 'visitors') renderVisitors();
   if (tab === 'knowledge') renderKnowledge();
   if (tab === 'settings') renderSettings();
+  if (tab === 'livechat') renderLiveChat();
 }
 
 // ==================== 从Supabase加载数据 ====================
@@ -432,7 +447,6 @@ async function loadAllData() {
     cloudData = await res.json();
     if (!Array.isArray(cloudData)) cloudData = [];
 
-    // 按访客分组
     cloudVisitors = {};
     cloudData.forEach(r => {
       if (!cloudVisitors[r.visitor_id]) cloudVisitors[r.visitor_id] = { vid: r.visitor_id, messages: [], first: r.created_at, last: r.created_at };
@@ -460,7 +474,6 @@ function renderDashboard() {
   document.getElementById('stat-msgs').textContent = totalMsgs;
   document.getElementById('stat-kb').textContent = getKnowledge().length;
 
-  // 最近活跃访客
   const recent = Object.values(visitors).sort((a,b) => new Date(b.last) - new Date(a.last)).slice(0, 5);
   const container = document.getElementById('recent-conversations');
   if (!recent.length) {
@@ -561,12 +574,9 @@ function renderSettings() {
   document.getElementById('ai-wx-number').value = settings.wxNumber || '18621893879';
   document.getElementById('ai-max-chars').value = settings.maxChars || '50';
   document.getElementById('ai-wx-turn').value = settings.wxTurn || '3';
-  document.getElementById('embed-code').value = '<!-- 影月影视 AI智能客服 v4.5 -->\n<script src="https://pro5brian-byte.github.io/ai-chat-service/chat-widget.js?v=40" async><\/script>\n<style>\n/* 按钮文字样式 */\n#ai-chat-btn { font-size: 0 !important; width: auto !important; padding: 12px 24px !important; border-radius: 24px !important; }\n#ai-chat-btn::before { content: "💬 在线客服"; font-size: 14px; }\n<\/style>';
+  document.getElementById('embed-code').value = '<!-- 影月影视 AI智能客服 v4.6 -->\n<script src="https://pro5brian-byte.github.io/ai-chat-service/chat-widget.js?v=41" async><\/script>\n<style>\n/* 按钮文字样式 */\n#ai-chat-btn { font-size: 0 !important; width: auto !important; padding: 12px 24px !important; border-radius: 24px !important; }\n#ai-chat-btn::before { content: "💬 在线客服"; font-size: 14px; }\n<\/style>';
 
-  // 🔥 加载通知设置（默认开启）
   document.getElementById('notify-feishu').checked = settings.notifyFeishu !== false;
-  
-  // 加载邮件设置（默认开启）
   document.getElementById('notify-email').checked = settings.notifyEmail !== false;
   updateEmailStatus();
 }
@@ -582,7 +592,6 @@ function saveAISettings() {
   showToast('AI设置已保存', 'success');
 }
 
-// 🔥 保存通知设置
 function saveNotifySettings() {
   const settings = getSettings();
   settings.notifyFeishu = document.getElementById('notify-feishu').checked;
@@ -590,7 +599,6 @@ function saveNotifySettings() {
   showToast('通知设置已保存', 'success');
 }
 
-// 🔥 保存邮件设置
 function saveEmailSettings() {
   const settings = getSettings();
   settings.notifyEmail = document.getElementById('notify-email').checked;
@@ -599,7 +607,6 @@ function saveEmailSettings() {
   showToast('邮件设置已保存', 'success');
 }
 
-// 更新邮件状态显示
 function updateEmailStatus() {
   const settings = getSettings();
   var status = settings.notifyEmail !== false ? '✅ 已开启 · 收件人：908159172@qq.com' : '⏸️ 已关闭';
@@ -615,7 +622,7 @@ function copyEmbedCode() {
   showToast('已复制到剪贴板', 'success');
 }
 function exportData() {
-  const data = { knowledge: getKnowledge(), settings: getSettings(), exportTime: new Date().toISOString(), version: '4.2' };
+  const data = { knowledge: getKnowledge(), settings: getSettings(), exportTime: new Date().toISOString(), version: '4.6' };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -635,6 +642,96 @@ function importData(input) {
   };
   reader.readAsText(file);
   input.value = '';
+}
+
+// ==================== 在线对话 ====================
+let livechatVisitors = {};
+let selectedVisitor = null;
+let livechatPollTimer = null;
+
+function renderLiveChat() {
+  loadLiveChatVisitors();
+  if (!livechatPollTimer) livechatPollTimer = setInterval(loadLiveChatVisitors, 3000);
+}
+
+async function loadLiveChatVisitors() {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const res = await fetch(SUPABASE_URL + '/rest/v1/chat_records?select=*&created_at=gte.' + today + 'T00:00:00&order=created_at.desc', { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } });
+    const data = await res.json();
+    const visitors = {};
+    data.forEach(r => { if (!visitors[r.visitor_id]) visitors[r.visitor_id] = { vid: r.visitor_id, messages: [], last: r.created_at }; visitors[r.visitor_id].messages.push(r); });
+    livechatVisitors = visitors;
+    const container = document.getElementById('livechat-visitors');
+    const list = Object.values(visitors).sort((a, b) => new Date(b.last) - new Date(a.last));
+    if (!list.length) { container.innerHTML = '<div class="empty-state"><div class="icon">👤</div><p>暂无活跃访客</p></div>'; return; }
+    let html = '';
+    list.forEach(v => {
+      const lastMsg = v.messages[v.messages.length - 1];
+      const isActive = selectedVisitor === v.vid;
+      html += '<div onclick="selectLiveChatVisitor(\'' + v.vid + '\')" style="padding:12px;border-radius:8px;cursor:pointer;margin-bottom:6px;' + (isActive ? 'background:#eff6ff;border-left:3px solid #eb6a3e;' : 'background:#f8fafc;') + '"><div style="font-size:12px;color:#64748b;font-family:monospace;">' + v.vid.substring(0, 12) + '...</div><div style="font-size:13px;color:#334155;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escapeHtml(lastMsg.content.substring(0, 30)) + (lastMsg.content.length > 30 ? '...' : '') + '</div><div style="font-size:11px;color:#94a3b8;margin-top:4px;">' + v.messages.length + ' 条消息 · ' + formatDate(v.last) + '</div></div>';
+    });
+    container.innerHTML = html;
+    if (selectedVisitor) renderLiveChatMessages(selectedVisitor);
+  } catch (e) { console.log('[在线对话] 加载失败:', e.message); }
+}
+
+function selectLiveChatVisitor(vid) {
+  selectedVisitor = vid;
+  loadLiveChatVisitors();
+  renderLiveChatMessages(vid);
+}
+
+function renderLiveChatMessages(vid) {
+  const visitor = livechatVisitors[vid];
+  if (!visitor) return;
+  document.getElementById('livechat-title').textContent = '访客 ' + vid.substring(0, 12) + '...';
+  document.getElementById('livechat-actions').style.display = 'flex';
+  document.getElementById('livechat-input-area').style.display = 'block';
+  let html = '<div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid #f1f5f9;"><strong>访客ID：</strong><span class="visitor-id">' + vid + '</span><span style="margin-left:16px;color:#94a3b8;font-size:13px;">共 ' + visitor.messages.length + ' 条消息</span></div>';
+  const sorted = visitor.messages.slice().sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+  sorted.forEach(m => {
+    const isUser = m.role === 'user';
+    const displayContent = m.content.startsWith('[人工] ') ? m.content.substring(5) : m.content;
+    const isHuman = m.content.startsWith('[人工] ');
+    html += '<div class="chat-bubble ' + (isUser ? 'user' : '') + '"><div><div class="bubble" style="' + (isHuman ? 'background:#dbeafe;border:1px solid #93c5fd;color:#1e40af;' : '') + '">' + (isHuman ? '👤 ' : '') + escapeHtml(displayContent) + '</div><div class="meta">' + formatDate(m.created_at) + (isHuman ? ' · 人工回复' : '') + '</div></div></div>';
+  });
+  document.getElementById('livechat-messages').innerHTML = html;
+  document.getElementById('livechat-messages').scrollTop = 99999;
+}
+
+async function sendHumanReply() {
+  const input = document.getElementById('livechat-input');
+  const text = input.value.trim();
+  if (!text || !selectedVisitor) return;
+  input.value = '';
+  try {
+    await fetch(SUPABASE_URL + '/rest/v1/human_replies', { method: 'POST', headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }, body: JSON.stringify({ visitor_id: selectedVisitor, content: text, is_read: false }) });
+    await fetch(SUPABASE_URL + '/rest/v1/chat_records', { method: 'POST', headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }, body: JSON.stringify({ visitor_id: selectedVisitor, role: 'ai', content: '[人工] ' + text }) });
+    showToast('人工回复已发送', 'success');
+    await loadLiveChatVisitors();
+    renderLiveChatMessages(selectedVisitor);
+  } catch (e) { showToast('发送失败: ' + e.message, 'error'); }
+}
+
+async function takeoverVisitor() {
+  if (!selectedVisitor) return;
+  try {
+    await fetch(SUPABASE_URL + '/rest/v1/human_replies', { method: 'POST', headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }, body: JSON.stringify({ visitor_id: selectedVisitor, content: '[SYSTEM:ADMIN_TAKEOVER]', is_read: true }) });
+    document.getElementById('btn-takeover').style.display = 'none';
+    document.getElementById('btn-release').style.display = 'inline-flex';
+    showToast('已接管对话，AI将不再自动回复', 'success');
+  } catch (e) { showToast('接管失败: ' + e.message, 'error'); }
+}
+
+async function releaseVisitor() {
+  if (!selectedVisitor) return;
+  try {
+    await fetch(SUPABASE_URL + '/rest/v1/human_replies', { method: 'POST', headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }, body: JSON.stringify({ visitor_id: selectedVisitor, content: '[SYSTEM:ADMIN_RELEASE]', is_read: true }) });
+    document.getElementById('btn-takeover').style.display = 'inline-flex';
+    document.getElementById('btn-release').style.display = 'none';
+    showToast('已释放对话，恢复AI自动回复', 'success');
+  } catch (e) { showToast('释放失败: ' + e.message, 'error'); }
 }
 
 // ==================== 模态框 ====================
