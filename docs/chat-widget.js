@@ -3,6 +3,9 @@
   const SUPABASE_URL = 'https://jtqwvrpjmvinyznmbcpl.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_QhnOitR4Y8o0LSTfIR5MrQ_9w_f6xWm';
 
+  // ==================== 飞书配置 ====================
+  const FEISHU_WEBHOOK = 'https://open.feishu.cn/open-apis/bot/v2/hook/c0ff22f2-bd84-411f-a969-d4797c8b5369';
+
   // ==================== AI 配置 ====================
   const CONFIG = {
     apiKey: 'sk-94GVykLFgWKkU1OwC27iK1kQC0S6asUZYZRtVvINHrYRrjWP',
@@ -147,6 +150,41 @@ ${KNOWLEDGE_BASE}
     return id;
   }
 
+  // ==================== 飞书通知 ====================
+  let hasNotifiedFeishu = false;
+
+  function sendFeishuNotification(content) {
+    // 检查是否开启飞书通知
+    try {
+      const settings = JSON.parse(localStorage.getItem('chat_settings') || '{}');
+      if (settings.notifyFeishu === false) return; // 用户关闭了通知
+    } catch(e) {}
+
+    // 每个访客只通知一次
+    if (hasNotifiedFeishu) return;
+    hasNotifiedFeishu = true;
+
+    const visitorId = getVisitorId();
+    const summary = '【影月影视】新客户咨询\n\n💬 客户消息：' + content.substring(0, 200) + '\n\n👤 访客ID：' + visitorId + '\n🕐 时间：' + new Date().toLocaleString('zh-CN');
+
+    try {
+      fetch(FEISHU_WEBHOOK, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          msg_type: 'text',
+          content: { text: summary }
+        })
+      }).then(function(res) {
+        console.log('[飞书] 通知发送状态:', res.status);
+      }).catch(function(err) {
+        console.log('[飞书] 发送失败:', err.message);
+      });
+    } catch(e) {
+      console.log('[飞书] 异常:', e.message);
+    }
+  }
+
   // ==================== 存储到 Supabase ====================
   function saveToSupabase(role, content) {
     try {
@@ -271,6 +309,16 @@ ${KNOWLEDGE_BASE}
     // 🔥 存储到 Supabase
     saveToSupabase('user', text);
 
+    // 🔥 发送飞书通知（客户发第2条消息时通知）
+    const userMsgCount = chatHistory.filter(m => m.role === 'user').length;
+    if (userMsgCount === 2) {
+      // 构建对话摘要
+      const summary = chatHistory.slice(-4).map(m => {
+        return m.role === 'user' ? '【客户】' + m.content : '【小影】' + m.content;
+      }).join('\n');
+      sendFeishuNotification(summary);
+    }
+
     const typingEl = addMessage('typing', '');
     sendBtn.disabled = true;
 
@@ -307,5 +355,5 @@ ${KNOWLEDGE_BASE}
   sendBtn.onclick = sendMessage;
   inputEl.onkeypress = function(e) { if(e.key === 'Enter') sendMessage(); };
 
-  console.log('[影月影视] AI智能客服 v4.0 (Supabase版) 已加载');
+  console.log('[影月影视] AI智能客服 v4.1 (飞书通知版) 已加载');
 })();
