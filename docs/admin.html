@@ -580,10 +580,10 @@ function renderSettings() {
   // 加载通知设置（默认开启）
   document.getElementById('notify-feishu').checked = settings.notifyFeishu !== false;
   
-  // 加载邮件设置
+  // 加载邮件设置（预填API Key）
   document.getElementById('notify-email').checked = settings.notifyEmail === true;
-  document.getElementById('email-api-key').value = settings.resendApiKey || '';
-  document.getElementById('email-from').value = settings.emailFrom || '';
+  document.getElementById('email-api-key').value = settings.resendApiKey || 're_Z89kcQVT_Ho9GL3W6W9wWJdEHjbsmPhGb';
+  document.getElementById('email-from').value = settings.emailFrom || 'onboarding@resend.dev';
   document.getElementById('email-to').value = settings.emailTo || '';
   toggleEmailConfig(settings.notifyEmail === true);
   updateEmailStatus();
