@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>客服组件测试</title>
+</head>
+<body>
+<h1>测试页面 - 检查右下角是否有"💬 在线客服"按钮</h1>
+<p>如果看不到按钮，请按 F12 打开控制台看报错信息。</p>
+
+<script src="https://pro5brian-byte.github.io/ai-chat-service/chat-widget.js?v=41" async></script>
+<style>
+#ai-chat-btn { font-size: 0 !important; width: auto !important; padding: 12px 24px !important; border-radius: 24px !important; }
+#ai-chat-btn::before { content: "💬 在线客服"; font-size: 14px; }
+</style>
+
+<script>
+setTimeout(function() {
+    var btn = document.getElementById('ai-chat-btn');
+    if (btn) {
+        console.log('✅ 客服按钮已创建，显示状态:', getComputedStyle(btn).display);
+    } else {
+        console.log('❌ 客服按钮未创建');
+    }
+}, 3000);
+</script>
+</body>
+</html>
