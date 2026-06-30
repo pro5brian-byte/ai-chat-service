@@ -15,20 +15,22 @@
   
   // 飞书通知函数
   function sendFeishuNotification(content){
+    console.log('[飞书] 开始发送通知...');
     try{
       var settings=JSON.parse(localStorage.getItem('chat_settings')||'{}');
-      if(settings.notifyFeishu===false)return;
-    }catch(e){}
-    if(hasNotifiedFeishu)return;
+      if(settings.notifyFeishu===false){console.log('[飞书] 已关闭，跳过');return;}
+    }catch(e){console.log('[飞书] localStorage读取错误:',e.message);}
+    if(hasNotifiedFeishu){console.log('[飞书] 已发送过，跳过');return;}
     hasNotifiedFeishu=true;
     var summary='【影月影视】新客户咨询\n\n💬 对话内容：\n'+content.substring(0,300)+'\n\n👤 访客ID：'+vid+'\n🕐 时间：'+new Date().toLocaleString('zh-CN');
+    console.log('[飞书] 正在发送...',FEISHU_WEBHOOK.substring(0,50)+'...');
     try{
       fetch(FEISHU_WEBHOOK,{
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({msg_type:'text',content:{text:summary}})
-      });
-    }catch(e){}
+      }).then(function(r){console.log('[飞书] 响应状态:',r.status);}).catch(function(e){console.log('[飞书] 发送失败:',e.message);});
+    }catch(e){console.log('[飞书] 异常:',e.message);}
   }
   
   // 邮件通知函数（使用 FormSubmit.co - 不需要API Key，前端直接发送）
@@ -97,7 +99,7 @@
     try{fetch(SUPABASE_URL+'/rest/v1/chat_records',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({visitor_id:vid,role:r,content:c})}).catch(function(){});}catch(e){}
   }
   
-  // 获取或创建访客ID（必须在saveToDB之后定义，vid被飞书函数引用）
+  // 获取或创建访客ID
   var vid=localStorage.getItem('chat_vid');
   if(!vid){vid='V'+Date.now().toString(36)+Math.random().toString(36).substr(2,4);localStorage.setItem('chat_vid',vid);}
   
