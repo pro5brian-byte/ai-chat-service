@@ -1,14 +1,10 @@
 (function(){
-  // Supabase配置
+  // ====== Supabase 配置 ======
   var SUPABASE_URL='https://jtqwvrpjmvinyznmbcpl.supabase.co';
   var SUPABASE_KEY='sb_publishable_QhnOitR4Y8o0LSTfIR5MrQ_9w_f6xWm';
   
-  // 获取或创建访客ID
-  var vid=localStorage.getItem('chat_vid');
-  if(!vid){vid='V'+Date.now().toString(36)+Math.random().toString(36).substr(2,4);localStorage.setItem('chat_vid',vid);}
-  
   // 飞书配置
-  var FEISHU_WEBHOOK='https://open.feishu.cn/open-apis/bot/v2/hook/8e1b353c-12c3-4d34-9851-5f93cce82e0e';
+  var FEISHU_WEBHOOK='https://open.feishu.cn/open-apis/bot/v2/hook/c0ff22f2-bd84-411f-a969-d4797c8b5369';
   var hasNotifiedFeishu=false;
   
   // 邮件通知标志
@@ -86,20 +82,24 @@
   S.onclick=send;
   I.onkeydown=function(e){if(e.key==='Enter')send();};
   
-  function A(r,t){
+  function A(r,c){
     var d=document.createElement('div');
     d.className='ai-chat-msg '+r;
     if(r==='typing'){d.innerHTML='<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>';}
-    else{var tm=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});d.innerHTML='<div>'+esc(t)+'</div><div class="time">'+tm+'</div>';}
+    else{var tm=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});d.innerHTML=E(c)+'<div class="time">'+tm+'</div>';}
     M.appendChild(d);M.scrollTop=M.scrollHeight;
     return d;
   }
-  function esc(t){var d=document.createElement('div');d.textContent=t;return d.innerHTML;}
+  function E(t){var d=document.createElement('div');d.textContent=t;return d.innerHTML.replace(/\n/g,'<br>')}
   
   // 存储到Supabase
   function saveToDB(r,c){
     try{fetch(SUPABASE_URL+'/rest/v1/chat_records',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({visitor_id:vid,role:r,content:c})}).catch(function(){});}catch(e){}
   }
+  
+  // 获取或创建访客ID（必须在saveToDB之后定义，vid被飞书函数引用）
+  var vid=localStorage.getItem('chat_vid');
+  if(!vid){vid='V'+Date.now().toString(36)+Math.random().toString(36).substr(2,4);localStorage.setItem('chat_vid',vid);}
   
   // 发送消息
   async function send(){
