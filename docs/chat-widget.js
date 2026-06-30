@@ -203,6 +203,23 @@ ${KNOWLEDGE_BASE}
     return div.innerHTML.replace(/\n/g, '<br>');
   }
 
+  // 发送通知到邮件+飞书
+  async function sendNotification(message) {
+    try {
+      await fetch('https://yingyue-notify.pro5-brian.workers.dev/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          visitorId: getVisitorId(),
+          message: message,
+          time: new Date().toLocaleString('zh-CN')
+        })
+      });
+    } catch(e) {
+      console.log('通知发送失败:', e);
+    }
+  }
+
   async function sendMessage() {
     const text = inputEl.value.trim();
     if(!text) return;
@@ -227,6 +244,8 @@ ${KNOWLEDGE_BASE}
         const reply = data.choices[0].message.content;
         addMessage('ai', reply);
         saveConversation('ai', reply);
+        // 发送邮件+飞书通知
+        sendNotification(text);
         chatHistory.push({role:'assistant', content:reply});
         if(chatHistory.length > CONFIG.maxHistory) chatHistory = chatHistory.slice(-CONFIG.maxHistory);
       } else { addMessage('ai', '不好意思，网络有点卡，您直接加导演微信 18621893879 聊吧 😊'); }
