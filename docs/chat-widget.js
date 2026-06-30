@@ -8,7 +8,7 @@
 
   // ==================== 邮件配置（硬编码，因为localStorage跨域隔离）====================
   const EMAIL_CONFIG = {
-    apiKey: 're_Z89kcQVT_Ho9GL3W6W9wWJdEHjbsmPhGb',
+    apiKey: 're_2RD5eYmj_FSTXWH1sRr65yh4ebBGHivpm',
     from: 'onboarding@resend.dev',
     to: '908159172@qq.com'
   };
@@ -187,11 +187,6 @@ ${KNOWLEDGE_BASE}
       const settings = JSON.parse(localStorage.getItem('chat_settings') || '{}');
       // 只有用户明确关闭才不发送（默认开启）
       if (settings.notifyEmail === false) return;
-      // 使用用户自定义配置或硬编码默认值
-      const apiKey = settings.resendApiKey || EMAIL_CONFIG.apiKey;
-      const from = settings.emailFrom || EMAIL_CONFIG.from;
-      const to = settings.emailTo || EMAIL_CONFIG.to;
-      if (!apiKey || !to) return;
     } catch(e) { return; }
     if (hasNotifiedEmail) return;
     hasNotifiedEmail = true;
@@ -201,7 +196,7 @@ ${KNOWLEDGE_BASE}
       fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
-          'Authorization': 'Bearer ' + (EMAIL_CONFIG.apiKey),
+          'Authorization': 'Bearer ' + EMAIL_CONFIG.apiKey,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -375,5 +370,5 @@ ${KNOWLEDGE_BASE}
   sendBtn.onclick = sendMessage;
   inputEl.onkeypress = function(e) { if(e.key === 'Enter') sendMessage(); };
 
-  console.log('[影月影视] AI智能客服 v4.3 (飞书+邮件通知版) 已加载');
+  console.log('[影月影视] AI智能客服 v4.4 (QQ邮箱版) 已加载');
 })();
