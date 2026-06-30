@@ -108,8 +108,7 @@ tr:hover { background: #fafaf9; }
 .slider::before { position: absolute; content: ''; height: 18px; width: 18px; left: 3px; bottom: 3px; background: #fff; transition: 0.3s; border-radius: 50%; }
 input:checked + .slider { background: #eb6a3e; }
 input:checked + .slider::before { transform: translateX(20px); }
-.switch-wrap { display: flex; align-items: center; margin-bottom: 16px; }
-.switch-label { margin-left: 12px; font-size: 14px; color: #475569; }
+input:disabled + .slider { background: #e0e0e0; cursor: not-allowed; }
 
 /* 设置项 */
 .setting-item { padding: 20px 0; border-bottom: 1px solid #f8fafc; }
@@ -142,8 +141,13 @@ input:checked + .slider::before { transform: translateX(20px); }
 .category-filter { padding: 6px 14px; border-radius: 20px; font-size: 13px; cursor: pointer; background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; }
 .category-filter.active { background: #eb6a3e; color: #fff; border-color: #eb6a3e; }
 
-/* 知识库模态框 */
-.kb-modal-body .form-row { margin-bottom: 16px; }
+/* 通知开关样式 */
+.notify-row { display: flex; align-items: center; gap: 16px; margin-bottom: 8px; }
+.notify-row.disabled { opacity: 0.5; }
+.notify-info { flex: 1; }
+.notify-info .title { font-size: 15px; font-weight: 500; color: #1e293b; margin-bottom: 4px; }
+.notify-info .desc { font-size: 13px; color: #94a3b8; }
+.notify-status { margin-top: 8px; padding: 8px 12px; background: #f8fafc; border-radius: 6px; font-size: 12px; color: #64748b; display: inline-block; }
 </style>
 </head>
 <body>
@@ -161,7 +165,7 @@ input:checked + .slider::before { transform: translateX(20px); }
     <div class="menu-item" onclick="switchTab('knowledge')" data-tab="knowledge"><span class="emoji">📚</span> 知识库</div>
     <div class="menu-item" onclick="switchTab('settings')" data-tab="settings"><span class="emoji">⚙️</span> 系统设置</div>
   </div>
-  <div class="footer">影月影视 AI智能客服<br>管理后台 v4.0</div>
+  <div class="footer">影月影视 AI智能客服<br>管理后台 v4.2</div>
 </div>
 
 <!-- 主内容区 -->
@@ -197,7 +201,7 @@ input:checked + .slider::before { transform: translateX(20px); }
     <div class="card" style="cursor:pointer;" onclick="switchTab('settings')">
       <div style="font-size:28px;margin-bottom:10px;">⚙️</div>
       <h3 style="font-size:14px;margin-bottom:6px;">系统设置</h3>
-      <p style="font-size:12px;color:#94a3b8;">配置开场语、AI策略和嵌入代码</p>
+      <p style="font-size:12px;color:#94a3b8;">配置开场语、AI策略和通知开关</p>
     </div>
   </div>
 </div>
@@ -238,7 +242,37 @@ input:checked + .slider::before { transform: translateX(20px); }
 
 <!-- ==================== 系统设置 ==================== -->
 <div id="tab-settings" class="tab-panel" style="display:none">
-  <div class="topbar"><div><h1>系统设置</h1><div class="subtitle">配置开场语、AI策略和嵌入代码</div></div></div>
+  <div class="topbar"><div><h1>系统设置</h1><div class="subtitle">配置开场语、AI策略和通知开关</div></div></div>
+
+  <!-- 通知设置 -->
+  <div class="card">
+    <div class="card-header"><h2>🔔 通知设置</h2></div>
+    <div class="setting-item">
+      <div class="notify-row">
+        <label class="switch">
+          <input type="checkbox" id="notify-feishu" onchange="saveNotifySettings()">
+          <span class="slider"></span>
+        </label>
+        <div class="notify-info">
+          <div class="title">飞书消息推送</div>
+          <div class="desc">客户发送第2条消息时，自动推送通知到飞书群</div>
+        </div>
+      </div>
+      <div class="notify-status" id="feishu-status">当前机器人：影月影视客服群</div>
+    </div>
+    <div class="setting-item">
+      <div class="notify-row disabled">
+        <label class="switch">
+          <input type="checkbox" id="notify-email" disabled>
+          <span class="slider"></span>
+        </label>
+        <div class="notify-info">
+          <div class="title">邮件通知</div>
+          <div class="desc">收到客户消息时发送邮件提醒（暂未配置邮件服务）</div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <div class="card">
     <div class="card-header"><h2>🤖 AI 策略设置</h2></div>
@@ -526,7 +560,10 @@ function renderSettings() {
   document.getElementById('ai-wx-number').value = settings.wxNumber || '18621893879';
   document.getElementById('ai-max-chars').value = settings.maxChars || '50';
   document.getElementById('ai-wx-turn').value = settings.wxTurn || '3';
-  document.getElementById('embed-code').value = '<!-- AI智能客服 -->\n<script src="https://pro5brian-byte.github.io/ai-chat-service/chat-widget.js?v=30" async><\/script>\n<style>\n#ai-chat-btn { font-size: 0 !important; width: auto !important; padding: 12px 24px !important; border-radius: 24px !important; }\n#ai-chat-btn::before { content: "💬 在线客服"; font-size: 14px; }\n<\/style>';
+  document.getElementById('embed-code').value = '<!-- AI智能客服 -->\n<script src="https://pro5brian-byte.github.io/ai-chat-service/chat-widget.js?v=32" async><\/script>\n<style>\n#ai-chat-btn { font-size: 0 !important; width: auto !important; padding: 12px 24px !important; border-radius: 24px !important; }\n#ai-chat-btn::before { content: "💬 在线客服"; font-size: 14px; }\n<\/style>';
+
+  // 🔥 加载通知设置（默认开启）
+  document.getElementById('notify-feishu').checked = settings.notifyFeishu !== false;
 }
 function saveAISettings() {
   const settings = getSettings();
@@ -539,13 +576,22 @@ function saveAISettings() {
   saveSettings(settings);
   showToast('AI设置已保存', 'success');
 }
+
+// 🔥 保存通知设置
+function saveNotifySettings() {
+  const settings = getSettings();
+  settings.notifyFeishu = document.getElementById('notify-feishu').checked;
+  saveSettings(settings);
+  showToast('通知设置已保存', 'success');
+}
+
 function copyEmbedCode() {
   document.getElementById('embed-code').select();
   document.execCommand('copy');
   showToast('已复制到剪贴板', 'success');
 }
 function exportData() {
-  const data = { knowledge: getKnowledge(), settings: getSettings(), exportTime: new Date().toISOString(), version: '4.0' };
+  const data = { knowledge: getKnowledge(), settings: getSettings(), exportTime: new Date().toISOString(), version: '4.2' };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
