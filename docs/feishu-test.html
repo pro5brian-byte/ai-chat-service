@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>飞书Webhook测试</title>
+<style>
+body{font-family:sans-serif;max-width:600px;margin:50px auto;padding:20px}
+button{padding:12px 24px;font-size:16px;background:#eb6a3e;color:#fff;border:none;border-radius:8px;cursor:pointer;margin:10px 0}
+button:hover{background:#d55a2e}
+#log{background:#f5f5f5;padding:15px;border-radius:8px;font-family:monospace;white-space:pre-wrap;min-height:200px}
+</style>
+</head>
+<body>
+<h2>飞书Webhook测试</h2>
+<p>点击下方按钮直接测试飞书机器人是否能收到消息</p>
+<button onclick="testFeishu()">发送测试消息到飞书</button>
+<div id="log"></div>
+
+<script>
+var FEISHU_WEBHOOK='https://open.feishu.cn/open-apis/bot/v2/hook/c0ff22f2-bd84-411f-a969-d4797c8b5369';
+
+function log(msg){
+  document.getElementById('log').textContent+='['+new Date().toLocaleTimeString('zh-CN')+'] '+msg+'\n';
+}
+
+async function testFeishu(){
+  log('开始测试飞书Webhook...');
+  log('Webhook: '+FEISHU_WEBHOOK.substring(0,50)+'...');
+  
+  try{
+    var res=await fetch(FEISHU_WEBHOOK,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        msg_type:'text',
+        content:{text:'【测试】这是一条直接从浏览器发送的测试消息\n时间:'+new Date().toLocaleString('zh-CN')+'\n如果收到说明Webhook正常'}
+      })
+    });
+    log('响应状态: '+res.status);
+    var text=await res.text();
+    log('响应内容: '+text);
+    if(res.ok){
+      log('✅ 发送成功！请检查飞书群是否收到消息');
+    }else{
+      log('❌ 发送失败，响应不是200');
+    }
+  }catch(e){
+    log('❌ 发送异常: '+e.message);
+  }
+}
+
+log('页面已加载，点击上方按钮测试');
+</script>
+</body>
+</html>
