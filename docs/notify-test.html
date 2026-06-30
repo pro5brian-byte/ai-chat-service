@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>通知系统测试 - 影月影视AI客服</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif; background: #f8fafc; padding: 40px; }
+.container { max-width: 600px; margin: 0 auto; }
+h1 { font-size: 22px; color: #1e293b; margin-bottom: 8px; }
+.subtitle { color: #94a3b8; font-size: 14px; margin-bottom: 30px; }
+.card { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid #f1f5f9; margin-bottom: 20px; }
+.card h3 { font-size: 16px; color: #1e293b; margin-bottom: 12px; }
+.card p { color: #64748b; font-size: 14px; margin-bottom: 16px; }
+input, textarea { width: 100%; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; margin-bottom: 12px; font-family: inherit; }
+button { padding: 10px 20px; background: #eb6a3e; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; }
+button:hover { background: #d55a2e; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+.log { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; font-family: 'Courier New', monospace; font-size: 13px; min-height: 200px; max-height: 400px; overflow-y: auto; }
+.log .info { color: #3b82f6; }
+.log .success { color: #10b981; }
+.log .error { color: #ef4444; }
+.log .warn { color: #f59e0b; }
+.status { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 500; margin-left: 10px; }
+.status.ok { background: #dcfce7; color: #166534; }
+.status.fail { background: #fee2e2; color: #991b1b; }
+.status.unknown { background: #f1f5f9; color: #64748b; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🔔 通知系统诊断测试</h1>
+  <p class="subtitle">测试邮件和飞书通知是否能正常送达</p>
+
+  <div class="card">
+    <h3>API 连通性检查</h3>
+    <p>测试 Cloudflare Worker 是否可以正常访问</p>
+    <div id="api-status"><span class="status unknown">⏳ 未测试</span></div>
+  </div>
+
+  <div class="card">
+    <h3>📧 邮件通知测试</h3>
+    <p>发送一封测试邮件到 908159172@qq.com</p>
+    <input type="text" id="test-msg" placeholder="输入测试消息内容..." value="【测试】AI客服通知系统测试消息">
+    <button onclick="testEmail()" id="btn-email">发送测试邮件</button>
+    <span id="email-status"></span>
+  </div>
+
+  <div class="card">
+    <h3>📱 飞书通知测试</h3>
+    <p>发送一条测试消息到飞书群</p>
+    <button onclick="testFeishu()" id="btn-feishu">发送测试飞书消息</button>
+    <span id="feishu-status"></span>
+  </div>
+
+  <div class="card">
+    <h3>🔔 同时发送（邮件+飞书）</h3>
+    <p>模拟真实场景：客户发送消息时同时触发邮件和飞书</p>
+    <button onclick="testBoth()" id="btn-both">发送邮件+飞书通知</button>
+    <span id="both-status"></span>
+  </div>
+
+  <div class="card">
+    <h3>📋 诊断日志</h3>
+    <div class="log" id="log"></div>
+    <button onclick="clearLog()" style="margin-top:10px;background:#64748b;">清空日志</button>
+  </div>
+</div>
+
+<script>
+const API_URL = 'https://yingyue-notify.pro5-brian.workers.dev/';
+const logEl = document.getElementById('log');
+
+function log(msg, type) {
+  const time = new Date().toLocaleTimeString('zh-CN');
+  const className = type || 'info';
+  logEl.innerHTML += `<div class="${className}">[${time}] ${msg}</div>`;
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+function clearLog() {
+  logEl.innerHTML = '';
+}
+
+// 页面加载时先检查API连通性
+async function checkApi() {
+  log('正在检查 API 连通性...');
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+    const res = await fetch(API_URL, {
+      method: 'GET',
+      signal: controller.signal
+    });
+    clearTimeout(timeout);
+    log(`API 响应状态: ${res.status} ${res.statusText}`, res.ok ? 'success' : 'warn');
+    document.getElementById('api-status').innerHTML = res.ok 
+      ? '<span class="status ok">✅ API 可达</span>'
+      : '<span class="status fail">⚠️ API 返回非200状态</span>';
+  } catch(e) {
+    log(`API 连通性检查失败: ${e.message}`, 'error');
+    document.getElementById('api-status').innerHTML = '<span class="status fail">❌ API 不可达</span>';
+  }
+}
+
+async function testEmail() {
+  const btn = document.getElementById('btn-email');
+  const status = document.getElementById('email-status');
+  const msg = document.getElementById('test-msg').value || '测试消息';
+  btn.disabled = true;
+  status.innerHTML = '<span class="status unknown">发送中...</span>';
+  log('【邮件测试】开始发送...');
+
+  try {
+    const start = Date.now();
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'email',
+        visitorId: 'TEST_' + Date.now(),
+        message: msg,
+        time: new Date().toLocaleString('zh-CN')
+      })
+    });
+    const elapsed = Date.now() - start;
+    const text = await res.text();
+    log(`【邮件测试】响应 ${res.status}，耗时 ${elapsed}ms`, res.ok ? 'success' : 'error');
+    log(`【邮件测试】响应内容: ${text.substring(0, 200)}`, res.ok ? 'success' : 'error');
+
+    if (res.ok) {
+      status.innerHTML = '<span class="status ok">✅ 发送成功</span>';
+    } else {
+      status.innerHTML = '<span class="status fail">❌ 发送失败</span>';
+    }
+  } catch(e) {
+    log(`【邮件测试】错误: ${e.message}`, 'error');
+    status.innerHTML = '<span class="status fail">❌ 请求异常</span>';
+  }
+  btn.disabled = false;
+}
+
+async function testFeishu() {
+  const btn = document.getElementById('btn-feishu');
+  const status = document.getElementById('feishu-status');
+  const msg = document.getElementById('test-msg').value || '测试消息';
+  btn.disabled = true;
+  status.innerHTML = '<span class="status unknown">发送中...</span>';
+  log('【飞书测试】开始发送...');
+
+  try {
+    const start = Date.now();
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'feishu',
+        visitorId: 'TEST_' + Date.now(),
+        message: msg,
+        time: new Date().toLocaleString('zh-CN')
+      })
+    });
+    const elapsed = Date.now() - start;
+    const text = await res.text();
+    log(`【飞书测试】响应 ${res.status}，耗时 ${elapsed}ms`, res.ok ? 'success' : 'error');
+    log(`【飞书测试】响应内容: ${text.substring(0, 200)}`, res.ok ? 'success' : 'error');
+
+    if (res.ok) {
+      status.innerHTML = '<span class="status ok">✅ 发送成功</span>';
+    } else {
+      status.innerHTML = '<span class="status fail">❌ 发送失败</span>';
+    }
+  } catch(e) {
+    log(`【飞书测试】错误: ${e.message}`, 'error');
+    status.innerHTML = '<span class="status fail">❌ 请求异常</span>';
+  }
+  btn.disabled = false;
+}
+
+async function testBoth() {
+  const btn = document.getElementById('btn-both');
+  const status = document.getElementById('both-status');
+  const msg = document.getElementById('test-msg').value || '测试消息';
+  btn.disabled = true;
+  status.innerHTML = '<span class="status unknown">发送中...</span>';
+  log('【合并测试】开始发送邮件+飞书...');
+
+  try {
+    const start = Date.now();
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'both',
+        visitorId: 'TEST_' + Date.now(),
+        message: msg,
+        time: new Date().toLocaleString('zh-CN')
+      })
+    });
+    const elapsed = Date.now() - start;
+    const text = await res.text();
+    log(`【合并测试】响应 ${res.status}，耗时 ${elapsed}ms`, res.ok ? 'success' : 'error');
+    log(`【合并测试】响应内容: ${text.substring(0, 300)}`, res.ok ? 'success' : 'error');
+
+    if (res.ok) {
+      status.innerHTML = '<span class="status ok">✅ 发送成功</span>';
+    } else {
+      status.innerHTML = '<span class="status fail">❌ 发送失败</span>';
+    }
+  } catch(e) {
+    log(`【合并测试】错误: ${e.message}`, 'error');
+    status.innerHTML = '<span class="status fail">❌ 请求异常</span>';
+  }
+  btn.disabled = false;
+}
+
+// 页面加载时自动检查
+log('页面加载完成，开始诊断...');
+checkApi();
+</script>
+</body>
+</html>

@@ -212,35 +212,41 @@ ${KNOWLEDGE_BASE}
 
     const visitorId = getVisitorId();
 
+    // 检查"仅首次通知"开关（默认开启）
     if (liveSettings.notifyFirstOnly !== false) {
       if (notifiedVisitors.has(visitorId)) return;
       notifiedVisitors.add(visitorId);
     }
 
+    // 确定通知类型：both(默认) / email / feishu
+    const emailOn = liveSettings.notifyEmail !== false;
+    const feishuOn = liveSettings.notifyFeishu !== false;
+    let type = 'both';
+    if (emailOn && !feishuOn) type = 'email';
+    if (!emailOn && feishuOn) type = 'feishu';
+    if (!emailOn && !feishuOn) return; // 两个都关闭
+
     const payload = {
+      type: type,
       visitorId: visitorId,
       message: message,
       time: new Date().toLocaleString('zh-CN')
     };
 
-    if (liveSettings.notifyEmail !== false) {
-      try {
-        await fetch('https://yingyue-notify.pro5-brian.workers.dev/', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...payload, type: 'email' })
-        });
-      } catch(e) { console.log('邮件通知失败:', e); }
-    }
-
-    if (liveSettings.notifyFeishu !== false) {
-      try {
-        await fetch('https://yingyue-notify.pro5-brian.workers.dev/', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...payload, type: 'feishu' })
-        });
-      } catch(e) { console.log('飞书通知失败:', e); }
+    try {
+      const res = await fetch('https://yingyue-notify.pro5-brian.workers.dev/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        console.log('[通知] 发送失败:', data.error || 'unknown');
+      } else {
+        console.log('[通知] 发送成功:', data.results);
+      }
+    } catch(e) {
+      console.log('[通知] 请求异常:', e.message);
     }
   }
 
@@ -354,8 +360,8 @@ ${KNOWLEDGE_BASE}
         const reply = data.choices[0].message.content;
         addMessage('ai', reply);
         saveConversation('ai', reply);
-        // 异步发送通知（不阻塞回复）
-        sendNotification(text);
+        // 发送通知（邮件+飞书），await确保发送完成
+        await sendNotification(text);
         chatHistory.push({role:'assistant', content:reply});
         if (chatHistory.length > CONFIG.maxHistory) chatHistory = chatHistory.slice(-CONFIG.maxHistory);
       } else {
