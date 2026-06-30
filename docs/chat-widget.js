@@ -6,6 +6,13 @@
   // ==================== 飞书配置 ====================
   const FEISHU_WEBHOOK = 'https://open.feishu.cn/open-apis/bot/v2/hook/c0ff22f2-bd84-411f-a969-d4797c8b5369';
 
+  // ==================== 邮件配置（硬编码，因为localStorage跨域隔离）====================
+  const EMAIL_CONFIG = {
+    apiKey: 're_Z89kcQVT_Ho9GL3W6W9wWJdEHjbsmPhGb',
+    from: 'onboarding@resend.dev',
+    to: '908159172@qq.com'
+  };
+
   // ==================== AI 配置 ====================
   const CONFIG = {
     apiKey: 'sk-94GVykLFgWKkU1OwC27iK1kQC0S6asUZYZRtVvINHrYRrjWP',
@@ -154,35 +161,22 @@ ${KNOWLEDGE_BASE}
   let hasNotifiedFeishu = false;
 
   function sendFeishuNotification(content) {
-    // 检查是否开启飞书通知
     try {
       const settings = JSON.parse(localStorage.getItem('chat_settings') || '{}');
-      if (settings.notifyFeishu === false) return; // 用户关闭了通知
+      if (settings.notifyFeishu === false) return;
     } catch(e) {}
-
-    // 每个访客只通知一次
     if (hasNotifiedFeishu) return;
     hasNotifiedFeishu = true;
-
     const visitorId = getVisitorId();
     const summary = '【影月影视】新客户咨询\n\n💬 对话内容：\n' + content.substring(0, 300) + '\n\n👤 访客ID：' + visitorId + '\n🕐 时间：' + new Date().toLocaleString('zh-CN');
-
     try {
       fetch(FEISHU_WEBHOOK, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          msg_type: 'text',
-          content: { text: summary }
-        })
-      }).then(function(res) {
-        console.log('[飞书] 通知发送状态:', res.status);
-      }).catch(function(err) {
-        console.log('[飞书] 发送失败:', err.message);
-      });
-    } catch(e) {
-      console.log('[飞书] 异常:', e.message);
-    }
+        body: JSON.stringify({ msg_type: 'text', content: { text: summary } })
+      }).then(function(res) { console.log('[飞书] 状态:', res.status); })
+        .catch(function(err) { console.log('[飞书] 失败:', err.message); });
+    } catch(e) { console.log('[飞书] 异常:', e.message); }
   }
 
   // ==================== 邮件通知（Resend API）====================
@@ -191,39 +185,37 @@ ${KNOWLEDGE_BASE}
   function sendEmailNotification(content) {
     try {
       const settings = JSON.parse(localStorage.getItem('chat_settings') || '{}');
-      // 邮件通知默认关闭，需要配置 resendApiKey 和 notifyEmail 才启用
-      if (settings.notifyEmail !== true) return;
-      if (!settings.resendApiKey || !settings.emailTo) return;
+      // 只有用户明确关闭才不发送（默认开启）
+      if (settings.notifyEmail === false) return;
+      // 使用用户自定义配置或硬编码默认值
+      const apiKey = settings.resendApiKey || EMAIL_CONFIG.apiKey;
+      const from = settings.emailFrom || EMAIL_CONFIG.from;
+      const to = settings.emailTo || EMAIL_CONFIG.to;
+      if (!apiKey || !to) return;
     } catch(e) { return; }
-
-    // 每个访客只通知一次
     if (hasNotifiedEmail) return;
     hasNotifiedEmail = true;
-
     const visitorId = getVisitorId();
     const summary = '【影月影视】新客户咨询\n\n💬 对话内容：\n' + content.substring(0, 300) + '\n\n👤 访客ID：' + visitorId + '\n🕐 时间：' + new Date().toLocaleString('zh-CN');
-
     try {
       fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
-          'Authorization': 'Bearer ' + JSON.parse(localStorage.getItem('chat_settings') || '{}').resendApiKey,
+          'Authorization': 'Bearer ' + (EMAIL_CONFIG.apiKey),
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          from: JSON.parse(localStorage.getItem('chat_settings') || '{}').emailFrom || 'onboarding@resend.dev',
-          to: JSON.parse(localStorage.getItem('chat_settings') || '{}').emailTo,
+          from: EMAIL_CONFIG.from,
+          to: EMAIL_CONFIG.to,
           subject: '【影月影视】新客户咨询提醒',
           text: summary
         })
       }).then(function(res) {
-        console.log('[邮件] 发送状态:', res.status);
-      }).catch(function(err) {
-        console.log('[邮件] 发送失败:', err.message);
-      });
-    } catch(e) {
-      console.log('[邮件] 异常:', e.message);
-    }
+        console.log('[邮件] 状态:', res.status);
+        if (res.ok) { console.log('[邮件] ✅ 发送成功'); }
+        else { res.text().then(function(t) { console.log('[邮件] ❌ 响应:', t); }); }
+      }).catch(function(err) { console.log('[邮件] 失败:', err.message); });
+    } catch(e) { console.log('[邮件] 异常:', e.message); }
   }
 
   // ==================== 存储到 Supabase ====================
@@ -238,23 +230,12 @@ ${KNOWLEDGE_BASE}
           'Content-Type': 'application/json',
           'Prefer': 'return=minimal'
         },
-        body: JSON.stringify({
-          visitor_id: visitorId,
-          role: role,
-          content: content
-        })
+        body: JSON.stringify({ visitor_id: visitorId, role: role, content: content })
       }).then(function(res) {
-        if (res.ok) {
-          console.log('[Supabase] ✅ 存储成功');
-        } else {
-          console.log('[Supabase] ❌ 存储失败:', res.status);
-        }
-      }).catch(function(err) {
-        console.log('[Supabase] ❌ 网络错误:', err.message);
-      });
-    } catch(e) {
-      console.log('[Supabase] ❌ 异常:', e.message);
-    }
+        if (res.ok) console.log('[Supabase] ✅ 存储成功');
+        else console.log('[Supabase] ❌ 失败:', res.status);
+      }).catch(function(err) { console.log('[Supabase] ❌ 错误:', err.message); });
+    } catch(e) { console.log('[Supabase] ❌ 异常:', e.message); }
   }
 
   // ==================== UI样式 ====================
@@ -347,10 +328,8 @@ ${KNOWLEDGE_BASE}
     chatHistory.push({role:'user', content:text});
     if (chatHistory.length > CONFIG.maxHistory) chatHistory = chatHistory.slice(-CONFIG.maxHistory);
 
-    // 🔥 存储到 Supabase
     saveToSupabase('user', text);
 
-    // 🔥 发送飞书通知 + 邮件通知（客户发第2条消息时通知）
     const userMsgCount = chatHistory.filter(m => m.role === 'user').length;
     if (userMsgCount === 2) {
       const summary = chatHistory.slice(-4).map(m => {
@@ -387,7 +366,7 @@ ${KNOWLEDGE_BASE}
       }
     } catch(e) {
       typingEl.remove();
-      addMessage('ai', '网络不太稳😅 方便留个联系方式吗？我让导演直接加您，一对一沟通更方便~');
+      addMessage('ai', '网络不太稳😅 方便留个联系方式吗？我让导演直接加您沟通~');
     }
     sendBtn.disabled = false;
     inputEl.focus();
