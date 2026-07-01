@@ -1,5 +1,4 @@
 (function(){
-  // 动态插入 CSS
   var style=document.createElement('style');
   style.textContent='#ai-chat-btn{position:fixed;bottom:20px;right:20px;width:60px;height:60px;border-radius:50%;background:#eb6a3e;color:#fff;border:none;cursor:pointer;font-size:24px;box-shadow:0 4px 20px rgba(0,0,0,0.2);z-index:99999;display:flex;align-items:center;justify-content:center;font-family:sans-serif}#ai-chat-box{position:fixed;bottom:90px;right:20px;width:380px;height:500px;background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,0.15);z-index:99998;display:none;flex-direction:column;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",sans-serif}#ai-chat-header{background:#eb6a3e;color:#fff;padding:14px 18px;font-weight:600;font-size:15px;display:flex;align-items:center;justify-content:space-between}#ai-chat-header .close-btn{background:none;border:none;color:#fff;font-size:18px;cursor:pointer}#ai-chat-messages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px}.ai-chat-msg{max-width:88%;padding:8px 12px;border-radius:12px;font-size:14px;line-height:1.5}.ai-chat-msg.user{align-self:flex-end;background:#eb6a3e;color:#fff}.ai-chat-msg.ai{align-self:flex-start;background:#f3f4f6;color:#333}.ai-chat-msg .time{font-size:11px;opacity:0.5;margin-top:3px}#ai-chat-input-area{padding:10px 12px;border-top:1px solid #eee;display:flex;gap:6px}#ai-chat-input{flex:1;padding:8px 12px;border:1px solid #e5e7eb;border-radius:20px;font-size:14px}#ai-chat-send{padding:8px 16px;background:#eb6a3e;color:#fff;border:none;border-radius:20px;cursor:pointer}.typing-dot{display:inline-block;width:6px;height:6px;background:#999;border-radius:50%;margin:0 2px;animation:typing 1.4s infinite}@keyframes typing{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-4px)}}#ai-chat-btn{font-size:0!important;width:auto!important;padding:12px 24px!important;border-radius:24px!important}#ai-chat-btn::before{content:"💬 在线客服";font-size:14px}';
   document.head.appendChild(style);
@@ -14,6 +13,9 @@
   var HUMAN_TABLE='human_replies';
   var C={apiKey:'sk-94GVykLFgWKkU1OwC27iK1kQC0S6asUZYZRtVvINHrYRrjWP',apiUrl:'https://api.moonshot.cn/v1/chat/completions',model:'moonshot-v1-8k',welcome:'您好！我是影月影视的小影~ 咱们专做企业宣传片、广告片、短视频，请问您想拍什么类型？',aiName:'在线客服小影',maxHistory:10};
   var processedReplies={};
+
+  var KB=[{q:'价格|多少钱|费用|报价',a:'都是根据需求定制的呢，看拍摄天数和后期复杂度，一般区间3万-30万。方便留个联系方式吗？我让导演直接加您给详细方案~'},{q:'宣传片|企业视频|公司介绍片',a:'当然拍！企业宣传片是我们的强项，服务过华为、腾讯、比亚迪等500多家上市公司。您是什么行业的？我给您匹配几个同行业案例看看~'},{q:'短视频|抖音|快手',a:'拍的！短视频我们有专门的团队，从脚本到拍摄到后期一站式搞定。您是什么类型的短视频呢？'},{q:'三维动画|MG动画|动画',a:'可以的！三维动画和MG动画我们都有专业的动画团队，能做产品演示、建筑漫游、品牌动画等。方便说下您的需求吗？'},{q:'流程|怎么合作|步骤',a:'流程很简单：1.需求沟通 2.方案策划 3.签订合同 4.拍摄制作 5.后期交付 6.修改确认。整个周期一般2-4周。'},{q:'时间|多久|周期',a:'一般企业宣传片拍摄2-3天，后期1-2周。具体看项目复杂度，简单的5-7天就能交付。急单也可以加急处理~'},{q:'航拍|无人机',a:'有的！我们有专业的航拍团队和设备，无人机、穿越机都有。建筑、工厂、活动航拍都拍过很多。'},{q:'直播|活动拍摄',a:'做的！活动拍摄和直播是我们的常规业务，单机位到多机位导播都可以。您是什么活动呢？'},{q:'地址|在哪|公司地址',a:'我们总部在上海，全国各地都可以上门拍摄。您是在哪个城市呢？'},{q:'优势|为什么选你们|和其他家比',a:'我们有3大优势：①13年行业经验，500+上市公司案例 ②从策划到后期一站式，省心 ③导演团队+电影级设备，质量有保障。'},{q:'修改|售后|不满意',a:'我们包含3次免费修改，直到您满意为止。售后也有保障，有问题随时找我们~'},{q:'免费|试用|方案',a:'前期咨询和方案策划是完全免费的！我们可以先了解您的需求，免费出一份初步方案和预算。'}];
+  function localReply(text){text=text.toLowerCase();for(var i=0;i<KB.length;i++){var keys=KB[i].q.split('|');for(var j=0;j<keys.length;j++){if(text.indexOf(keys[j])>=0)return KB[i].a;}return null;}}
 
   function sendFeishuNotification(content){
     if(hasNotifiedFeishu)return;
@@ -118,10 +120,16 @@
         H.push({role:'assistant',content:reply});
         if(H.length>C.maxHistory)H=H.slice(-C.maxHistory);
         saveToDB('ai',reply);
-      }else{A('ai','不好意思网络有点慢😅 方便留个联系方式吗？我让导演直接加您沟通~');}
+      }else{
+        var fallback2=localReply(t);
+        if(fallback2){A('ai',fallback2);H.push({role:'assistant',content:fallback2});saveToDB('ai',fallback2);}
+        else{A('ai','感谢您的咨询！我已经记录了您的需求，导演会尽快联系您。方便留个微信或手机号吗？');}
+      }
     }catch(e){
       typing.remove();
-      A('ai','网络不太稳😅 方便留个联系方式吗？我让导演直接加您沟通~');
+      var fallback=localReply(t);
+      if(fallback){A('ai',fallback);H.push({role:'assistant',content:fallback});saveToDB('ai',fallback);}
+      else{A('ai','感谢您的咨询！我已经记录了您的需求，导演会尽快联系您。方便留个微信或手机号吗？');}
     }
     S.disabled=false;
     I.focus();
