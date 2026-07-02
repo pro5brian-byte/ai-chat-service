@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>影月影视 AI智能客服 - 管理后台 v5.0</title>
+<title>影月影视 AI智能客服 - 管理后台 v5.1</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif; background: #f8fafc; color: #334155; }
@@ -200,7 +200,7 @@ input:disabled + .slider { background: #e0e0e0; cursor: not-allowed; }
     <div class="menu-item" onclick="switchTab('livechat')" data-tab="livechat"><span class="emoji">👤</span> 在线对话</div>
     <div class="menu-item" onclick="switchTab('settings')" data-tab="settings"><span class="emoji">⚙️</span> 系统设置</div>
   </div>
-  <div class="footer">影月影视 AI智能客服<br>管理后台 v5.0</div>
+  <div class="footer">影月影视 AI智能客服<br>管理后台 v5.1</div>
 </div>
 
 <!-- 主内容区 -->
@@ -369,8 +369,8 @@ input:disabled + .slider { background: #e0e0e0; cursor: not-allowed; }
       <textarea id="ai-welcome" onchange="saveAISettings()">您好！我是影月影视的小影，很高兴为您服务~ 咱们专做企业宣传片、广告片、短视频等影视制作，请问您想拍什么类型的片子呢？</textarea>
     </div>
     <div class="setting-item">
-      <h4>联系方式询问话术</h4><p>第3句后询问客户联系方式的话术</p>
-      <textarea id="ai-wx-prompt" onchange="saveAISettings()">对了，聊了这么多还没请教您怎么称呼？方便留个微信或手机号吗？我把您的需求跟导演说一下，让导演直接加您沟通~</textarea>
+      <h4>联系方式询问话术（v5.1更新：用发案例引导）</h4><p>第3句后询问客户联系方式的话术，以发同行业案例为引导</p>
+      <textarea id="ai-wx-prompt" onchange="saveAISettings()">聊了这么多，我想把我们近期同行业的案例整理一份发给您参考，您方便留个微信或邮箱吗？我让导演整理好发您，也可以跟您详细沟通一下拍摄方案~</textarea>
     </div>
     <div class="setting-item">
       <h4>导演微信号</h4><p>用于替换变量的实际微信号</p>
@@ -642,11 +642,17 @@ function renderSettings() {
   const settings = getSettings();
   document.getElementById('ai-name').value = settings.aiName || '在线客服小影';
   document.getElementById('ai-welcome').value = settings.welcomeMessage || '您好！我是影月影视的小影，很高兴为您服务~ 咱们专做企业宣传片、广告片、短视频等影视制作，请问您想拍什么类型的片子呢？';
-  document.getElementById('ai-wx-prompt').value = settings.wxPrompt || '';
+  document.getElementById('ai-wx-prompt').value = settings.wxPrompt || '聊了这么多，我想把我们近期同行业的案例整理一份发给您参考，您方便留个微信或邮箱吗？我让导演整理好发您，也可以跟您详细沟通一下拍摄方案~';
   document.getElementById('ai-wx-number').value = settings.wxNumber || '18621893879';
   document.getElementById('ai-max-chars').value = settings.maxChars || '50';
   document.getElementById('ai-wx-turn').value = settings.wxTurn || '3';
-  document.getElementById('embed-code').value = '<!-- 影月影视 AI智能客服 v5.0 -->\n<script src="https://pro5brian-byte.github.io/ai-chat-service/chat-widget.js?v=42" async><\/script>\n<style>\n/* 按钮文字样式 */\n#ai-chat-btn { font-size: 0 !important; width: auto !important; padding: 12px 24px !important; border-radius: 24px !important; }\n#ai-chat-btn::before { content: "💬 在线客服"; font-size: 14px; }\n<\/style>';
+  document.getElementById('embed-code').value = '<!-- 影月影视 AI智能客服 v5.1 -->
+<script src="https://pro5brian-byte.github.io/ai-chat-service/chat-widget.js?v=43" async><\/script>
+<style>
+/* 按钮文字样式 */
+#ai-chat-btn { font-size: 0 !important; width: auto !important; padding: 12px 24px !important; border-radius: 24px !important; }
+#ai-chat-btn::before { content: "💬 在线客服"; font-size: 14px; }
+<\/style>';
 
   document.getElementById('notify-feishu').checked = settings.notifyFeishu !== false;
   document.getElementById('notify-email').checked = settings.notifyEmail !== false;
@@ -694,7 +700,7 @@ function copyEmbedCode() {
   showToast('已复制到剪贴板', 'success');
 }
 function exportData() {
-  const data = { knowledge: getKnowledge(), settings: getSettings(), exportTime: new Date().toISOString(), version: '5.0' };
+  const data = { knowledge: getKnowledge(), settings: getSettings(), exportTime: new Date().toISOString(), version: '5.1' };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
