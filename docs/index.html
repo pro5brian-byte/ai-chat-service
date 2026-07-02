@@ -3,21 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI智能客服</title>
+<title>影月影视 AI智能客服系统 v5.0</title>
 <style>
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif; margin: 0; padding: 0; background: #f5f7fa; }
 .container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
 .header { text-align: center; margin-bottom: 60px; }
 .header h1 { font-size: 42px; color: #1e293b; margin-bottom: 16px; }
 .header p { font-size: 18px; color: #64748b; }
-.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-bottom: 40px; }
+.version-badge { display: inline-block; padding: 4px 12px; background: #eb6a3e; color: #fff; border-radius: 20px; font-size: 14px; font-weight: 500; margin-top: 12px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 40px; }
 .card { background: #fff; border-radius: 16px; padding: 32px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); text-decoration: none; color: inherit; transition: transform 0.2s, box-shadow 0.2s; }
 .card:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,0.12); }
 .card .icon { font-size: 40px; margin-bottom: 16px; }
 .card h3 { font-size: 20px; color: #1e293b; margin-bottom: 8px; }
 .card p { font-size: 14px; color: #64748b; line-height: 1.6; }
-.btn-primary { display: inline-block; padding: 14px 32px; background: #4f46e5; color: #fff; text-decoration: none; border-radius: 10px; font-size: 16px; font-weight: 500; margin-top: 20px; }
+.btn-primary { display: inline-block; padding: 14px 32px; background: #eb6a3e; color: #fff; text-decoration: none; border-radius: 10px; font-size: 16px; font-weight: 500; margin-top: 20px; }
+.btn-secondary { display: inline-block; padding: 10px 24px; background: #f1f5f9; color: #475569; text-decoration: none; border-radius: 8px; font-size: 14px; margin-top: 12px; margin-left: 8px; }
 .footer { text-align: center; margin-top: 60px; color: #94a3b8; font-size: 14px; }
+.feature-list { text-align: left; margin-top: 16px; }
+.feature-list li { font-size: 13px; color: #64748b; margin-bottom: 6px; }
 </style>
 </head>
 <body>
@@ -25,26 +29,39 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
   <div class="header">
     <h1>🤖 AI 智能客服系统</h1>
     <p>基于 Kimi 大模型的企业智能客服解决方案</p>
-    <a href="admin.html" class="btn-primary">进入管理后台</a>
+    <div class="version-badge">v5.0 · 支持人工接管</div>
+    <div style="margin-top:20px;">
+      <a href="admin.html" class="btn-primary">进入管理后台</a>
+      <a href="supabase-setup.md" class="btn-secondary">数据库配置</a>
+    </div>
   </div>
   <div class="cards">
     <a href="admin.html" class="card">
       <div class="icon">📊</div>
       <h3>管理后台</h3>
-      <p>查看数据统计、管理聊天记录、配置知识库、设置系统参数</p>
+      <p>查看数据统计、管理访客记录、配置知识库、在线人工接管对话</p>
     </a>
     <a href="chat-widget.js" class="card" download>
       <div class="icon">💬</div>
       <h3>聊天组件</h3>
-      <p>下载嵌入代码，将AI客服添加到你的企业官网</p>
+      <p>下载嵌入代码，将AI客服添加到企业官网。支持人工接管模式切换</p>
     </a>
-    <div class="card">
-      <div class="icon">📖</div>
-      <h3>使用说明</h3>
-      <p>1. 进入管理后台配置知识库<br>2. 复制嵌入代码到官网HTML<br>3. 访客即可与AI对话</p>
-    </div>
+    <a href="supabase-setup.md" class="card">
+      <div class="icon">⚡</div>
+      <h3>人工接管</h3>
+      <p>访客可点击"转人工客服"，管理员在后台实时接管对话，AI自动暂停回复</p>
+      <ul class="feature-list">
+        <li>✅ 访客一键转人工</li>
+        <li>✅ 后台实时接管对话</li>
+        <li>✅ 飞书通知含接管链接</li>
+        <li>✅ AI/人工模式无缝切换</li>
+      </ul>
+    </a>
   </div>
-  <div class="footer">Powered by Kimi AI</div>
+  <div class="footer">
+    影月影视 AI智能客服系统 v5.0<br>
+    <span style="font-size:12px;">Powered by Kimi AI · GitHub Pages · Supabase</span>
+  </div>
 </div>
 </body>
 </html>
